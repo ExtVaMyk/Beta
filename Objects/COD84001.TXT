@@ -1,0 +1,82 @@
+OBJECT Codeunit 84001 ForNAV Get Vat Amount Lines
+{
+  OBJECT-PROPERTIES
+  {
+    Date=24-03-17;
+    Time=14:43:06;
+    Modified=Yes;
+    Version List=FORNAVBETA;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+
+    PROCEDURE GetVatAmountLines@1000000000(Rec@1000000000 : Variant;VAR VATAmountLine@1000000001 : TEMPORARY Record 290);
+    VAR
+      DocLineBuffer@1000000006 : TEMPORARY Record 84999;
+      RecRefLib@1000000002 : Codeunit 84090;
+      TestValidDociFace@1000000004 : Codeunit 84080;
+      RecRef@1000000003 : RecordRef;
+      LineRec@1000000005 : RecordRef;
+    BEGIN
+      ThrowErrorIfNotTemp(VATAmountLine);
+      RecRefLib.ConvertToRecRef(Rec, RecRef);
+      TestValidDociFace.ThrowErrorIfNotValid(RecRef);
+      FindLinesRecRef(DocLineBuffer, RecRef, LineRec);
+      CreateVATAmountLine(DocLineBuffer, VATAmountLine);
+    END;
+
+    LOCAL PROCEDURE ThrowErrorIfNotTemp@1000000001(VAR VATAmountLine@1000000000 : Record 290);
+    VAR
+      NotTempErr@1000000001 : TextConst 'ENU=When using this function the Vat Amount Line table should be declared as temporary.';
+    BEGIN
+      WITH VATAmountLine DO
+        IF NOT ISTEMPORARY THEN
+          ERROR(NotTempErr);
+    END;
+
+    LOCAL PROCEDURE FindLinesRecRef@1000000003(VAR DocLineBuffer@1000000004 : Record 84999;VAR RecRef@1000000000 : RecordRef;VAR LineRec@1000000001 : RecordRef);
+    VAR
+      RecRefLib@1000000002 : Codeunit 84090;
+      FldRef@1000000003 : FieldRef;
+    BEGIN
+      LineRec.OPEN(RecRef.NUMBER + 1);
+
+      RecRefLib.FindAndFilterieldNo(RecRef, LineRec, FldRef, 'No.');
+      RecRefLib.FindAndFilterieldNo(RecRef, LineRec, FldRef, 'Document Type');
+      IF LineRec.FINDSET THEN REPEAT
+        DocLineBuffer.CreateForRecRef(LineRec);
+      UNTIL LineRec.NEXT = 0;
+    END;
+
+    LOCAL PROCEDURE CreateVATAmountLine@1000000002(VAR DocLineBuffer@1000000001 : Record 84999;VAR VATAmountLine@1000000000 : Record 290);
+    BEGIN
+      WITH DocLineBuffer DO
+        IF FINDSET THEN REPEAT
+          VATAmountLine.INIT;
+          VATAmountLine."VAT Identifier" := "VAT Identifier";
+          VATAmountLine."VAT Calculation Type" := "VAT Calculation Type";
+          VATAmountLine."Tax Group Code" := "Tax Group Code";
+          VATAmountLine."VAT %" := "VAT %";
+          VATAmountLine."VAT Base" := Amount;
+          VATAmountLine."Amount Including VAT" := "Amount Including VAT";
+          VATAmountLine."Line Amount" := "Line Amount";
+          IF "Allow Invoice Disc." THEN
+            VATAmountLine."Inv. Disc. Base Amount" := "Line Amount";
+          VATAmountLine."Invoice Discount Amount" := "Inv. Discount Amount";
+          VATAmountLine."VAT Clause Code" := "VAT Clause Code";
+          IF ("VAT %" <> 0) OR ("VAT Clause Code" <> '') OR (Amount <> "Amount Including VAT") THEN
+            VATAmountLine.InsertLine;
+        UNTIL NEXT = 0;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

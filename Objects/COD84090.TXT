@@ -1,0 +1,59 @@
+OBJECT Codeunit 84090 ForNAV RecordRef Library
+{
+  OBJECT-PROPERTIES
+  {
+    Date=16-03-17;
+    Time=16:54:07;
+    Modified=Yes;
+    Version List=FORNAVBETA;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+
+    PROCEDURE ConvertToRecRef@1000000002(VAR Rec@1000000000 : Variant;RecRef@1000000001 : RecordRef);
+    VAR
+      WrongDataTypeErr@1000000002 : TextConst 'ENU=Runtime Error: Wrong Datatype. Please contact your ForNAV reseller.';
+    BEGIN
+      CASE TRUE OF
+        Rec.ISRECORDREF:
+          RecRef := Rec;
+        Rec.ISRECORD:
+          RecRef.GETTABLE(Rec);
+        ELSE
+          ERROR(WrongDataTypeErr);
+      END;
+    END;
+
+    PROCEDURE FindAndFilterieldNo@1000000003(VAR RecRef@1000000000 : RecordRef;VAR LineRec@1000000004 : RecordRef;VAR FldRef@1000000001 : FieldRef;Value@1000000005 : Text);
+    VAR
+      Field@1000000003 : Record 2000000041;
+      DocumentNoField@1000000002 : FieldRef;
+    BEGIN
+      Field.SETRANGE(TableNo, RecRef.NUMBER);
+      Field.SETRANGE(FieldName, Value);
+      IF NOT Field.FINDFIRST THEN
+        EXIT;
+
+      DocumentNoField := RecRef.FIELD(Field."No.");
+
+      Field.RESET;
+      Field.SETRANGE(TableNo, RecRef.NUMBER + 1);
+      Field.SETRANGE("No.", Field."No.");
+      IF NOT Field.FINDFIRST THEN
+        EXIT;
+
+      FldRef := LineRec.FIELD(Field."No.");
+      FldRef.SETRANGE(DocumentNoField.VALUE);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

@@ -1,0 +1,46 @@
+OBJECT Codeunit 84002 ForNAV Get Vat Clause
+{
+  OBJECT-PROPERTIES
+  {
+    Date=24-03-17;
+    Time=14:55:11;
+    Modified=Yes;
+    Version List=FORNAVBETA;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      TryGetVATClause@1000000000 : Integer;
+
+    PROCEDURE GetVATClauses@1000000000(VAR VATAmountLine@1000000001 : TEMPORARY Record 290;VAR VATClause@1000000000 : Record 560;LanguageCode@1000000002 : Code[10]);
+    BEGIN
+      WITH VATAmountLine DO
+        IF FINDSET THEN REPEAT
+          TryGetVATClauseText(VATClause, "VAT Clause Code", LanguageCode);
+        UNTIL NEXT = 0;
+    END;
+
+    LOCAL PROCEDURE TryGetVATClauseText@1000000002(VAR VATClausePar@1000000000 : Record 560;VATClauseCode@1000000002 : Code[10];LanguageCode@1000000003 : Code[10]);
+    VAR
+      VATClause@1000000001 : Record 560;
+    BEGIN
+      IF NOT VATClause.GET(VATClauseCode) THEN
+        EXIT;
+
+      VATClause.TranslateDescription(LanguageCode);
+
+      VATClausePar := VATClause;
+      IF VATClausePar.INSERT THEN;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

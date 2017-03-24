@@ -1,0 +1,63 @@
+OBJECT Codeunit 84000 ForNAV Check Document Discount
+{
+  OBJECT-PROPERTIES
+  {
+    Date=16-03-17;
+    Time=16:54:50;
+    Modified=Yes;
+    Version List=FORNAVBETA;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+
+    PROCEDURE HasDiscount@1000000001(Rec@1000000000 : Variant) : Boolean;
+    VAR
+      RecRefLib@1000000002 : Codeunit 84090;
+      TestValidDociFace@1000000003 : Codeunit 84080;
+      RecRef@1000000001 : RecordRef;
+    BEGIN
+      RecRefLib.ConvertToRecRef(Rec, RecRef);
+      TestValidDociFace.ThrowErrorIfNotValid(RecRef);
+      EXIT(CheckLinesTableForDiscount(RecRef, FindDiscountFieldNoInLines(RecRef)));
+    END;
+
+    LOCAL PROCEDURE FindDiscountFieldNoInLines@1000000009(RecRef@1000000001 : RecordRef) : Integer;
+    VAR
+      Field@1000000000 : Record 2000000041;
+      NoDiscountFieldErr@1000000002 : TextConst 'ENU=The connected line table does not contain a valid field for Line Discount.';
+    BEGIN
+      Field.SETRANGE(TableNo, RecRef.NUMBER + 1);
+      Field.SETRANGE(FieldName, 'Line Discount %');
+      IF NOT Field.FINDFIRST THEN
+        ERROR(NoDiscountFieldErr);
+
+      EXIT(Field."No.");
+    END;
+
+    LOCAL PROCEDURE CheckLinesTableForDiscount@1000000011(VAR RecRef@1000000000 : RecordRef;FieldNo@1000000001 : Integer) : Boolean;
+    VAR
+      RecRefLib@1000000004 : Codeunit 84090;
+      LineRec@1000000003 : RecordRef;
+      FldRef@1000000002 : FieldRef;
+    BEGIN
+      LineRec.OPEN(RecRef.NUMBER + 1);
+
+      RecRefLib.FindAndFilterieldNo(RecRef, LineRec, FldRef, 'No.');
+      RecRefLib.FindAndFilterieldNo(RecRef, LineRec, FldRef, 'Document Type');
+
+      FldRef := LineRec.FIELD(FieldNo);
+      FldRef.SETFILTER('<>0');
+      EXIT(NOT LineRec.ISEMPTY);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

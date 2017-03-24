@@ -1,0 +1,423 @@
+OBJECT Report 84002 ForNAV Sales Credit Memo
+{
+  OBJECT-PROPERTIES
+  {
+    Date=24-03-17;
+    Time=17:31:09;
+    Modified=Yes;
+    Version List=FORNAV2.0.0.1180/1180;
+  }
+  PROPERTIES
+  {
+    OnInitReport=BEGIN
+                                                                                                                              ;ReportForNav:= ReportForNav.Report(CurrReport.OBJECTID,CurrReport.LANGUAGE,SERIALNUMBER,USERID,COMPANYNAME);ReportForNav.Init;
+                 END;
+
+    OnPreReport=BEGIN
+                  ;ReportForNav.OpenDesigner:=ReportForNavOpenDesigner;IF NOT ReportForNav.Pre THEN CurrReport.QUIT;
+                END;
+
+    OnPostReport=BEGIN
+                   ;ReportForNav.Post;
+                 END;
+
+  }
+  DATASET
+  {
+    { 2   ;    ;DataItem;Header              ;
+               DataItemTable=Table114;
+               OnAfterGetRecord=BEGIN
+                                  ChangeLanguage("Language Code");
+                                  GetVatAmountLines;
+                                  GetVATClauses;
+                                END;
+
+               CalcFields=Amount Including VAT,Amount }
+
+    { 1000000000;1;Column;HasDiscount        ;
+               IncludeCaption=No;
+               SourceExpr=ForNAVCheckDocumentDiscount.HasDiscount(Header) }
+
+    { 3   ;1   ;DataItem;Line                ;
+               DataItemTable=Table115;
+               DataItemTableView=SORTING(Document No.,Line No.);
+               DataItemLinkReference=Header;
+               DataItemLink=Document No.=FIELD(No.) }
+
+    { 1000000001;1;DataItem;VATAmountLine    ;
+               DataItemTable=Table290;
+               OnPreDataItem=BEGIN
+                               IF NOT PrintVATAmountLines THEN
+                                 CurrReport.BREAK;
+                             END;
+
+               Temporary=Yes }
+
+    { 1000000002;1;DataItem;VATClause        ;
+               DataItemTable=Table560;
+               Temporary=Yes }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+      { 1900000001;0;Container;
+                  ContainerType=ContentArea }
+
+      { 1900000002;1;Group  ;
+                  CaptionML=[CSY=Moznosti;
+                             DAN=Indstillinger;
+                             DEU=Optionen;
+                             ENU=Options;
+                             FIN=Vaihtoehdot;
+                             ISL=Valkostir;
+                             NLD=Opties;
+                             NOR=Alternativer;
+                             SVE=Alternativ;
+                             ITS=Opzioni;
+                             NLB=Opties] }
+
+      { 5000;2   ;Field     ;
+                  Name=ForNavOpenDesigner;
+                  CaptionML=ENU=Open Designer;
+                  SourceExpr=ReportForNavOpenDesigner;
+                  Visible=ReportForNavAllowDesign }
+
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      ForNAVCheckDocumentDiscount@1000000000 : Codeunit 84000;
+      ReportForNav@5000 : DotNet "'ForNav.Reports.2.0.0.1180, Version=2.0.0.1180, Culture=neutral, PublicKeyToken=5284c1af2984feb0'.ForNav.Report" WITHEVENTS;
+      ReportForNavClient@5003 : DotNet "'ForNav.Reports.2.0.0.1180, Version=2.0.0.1180, Culture=neutral, PublicKeyToken=5284c1af2984feb0'.ForNav.Report" RUNONCLIENT;
+      ReportForNavDialog@5001 : Dialog;
+      ReportForNavOpenDesigner@5002 : Boolean;
+      ReportForNavAllowDesign@5004 : Boolean INDATASET;
+
+    LOCAL PROCEDURE ChangeLanguage@1000000002(LanguageCode@1000000001 : Code[10]);
+    VAR
+      Language@1000000000 : Record 8;
+    BEGIN
+      CurrReport.LANGUAGE(Language.GetLanguageID(LanguageCode));
+    END;
+
+    LOCAL PROCEDURE GetVatAmountLines@1000000000();
+    VAR
+      ForNAVGetVatAmountLines@1000000000 : Codeunit 84001;
+    BEGIN
+      VATAmountLine.DELETEALL;
+      ForNAVGetVatAmountLines.GetVatAmountLines(Header, VATAmountLine);
+    END;
+
+    LOCAL PROCEDURE GetVATClauses@1000000001();
+    VAR
+      ForNAVGetVatClause@1000000000 : Codeunit 84002;
+    BEGIN
+      VATClause.DELETEALL;
+      ForNAVGetVatClause.GetVATClauses(VATAmountLine, VATClause, Header."Language Code");
+    END;
+
+    LOCAL PROCEDURE PrintVATAmountLines@1000000003() : Boolean;
+    VAR
+      ForNAVSetup@1000000000 : Record 84000;
+    BEGIN
+      WITH ForNAVSetup DO BEGIN
+        GET;
+        CASE "VAT Amount Specification" OF
+          "VAT Amount Specification"::Always:
+            EXIT(TRUE);
+          "VAT Amount Specification"::"Multiple Lines":
+            EXIT(VATAmountLine.COUNT > 1);
+          "VAT Amount Specification"::Never:
+            EXIT(FALSE);
+        END;
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnInit@5002();
+    VAR
+      ReportLayoutSelection@1000 : Record 9651;
+      CustomReportLayout@1001 : Record 9650;
+      CustomLayoutID@1002 : Variant;
+      InStream@1004 : InStream;
+      EmptyLayout@1003 : Text;
+    BEGIN
+      EmptyLayout := FORMAT(ReportLayoutSelection."Custom Report Layout Code");
+      CustomLayoutID := ReportLayoutSelection."Custom Report Layout Code";
+      ReportForNav.OData := GETURL(CLIENTTYPE::OData, COMPANYNAME, OBJECTTYPE::Page, 7702);
+      IF FORMAT(ReportLayoutSelection.GetTempLayoutSelected) <> EmptyLayout THEN
+        CustomLayoutID := ReportLayoutSelection.GetTempLayoutSelected
+      ELSE
+        IF ReportLayoutSelection.HasCustomLayout(ReportForNav.ReportID) = 1 THEN
+          CustomLayoutID := ReportLayoutSelection."Custom Report Layout Code";
+
+      IF (FORMAT(CustomLayoutID) <> EmptyLayout) AND CustomReportLayout.GET(CustomLayoutID) THEN BEGIN
+        CustomReportLayout.TESTFIELD(Type,CustomReportLayout.Type::RDLC);
+        CustomReportLayout.CALCFIELDS(Layout);
+        CustomReportLayout.Layout.CREATEINSTREAM(InStream,TEXTENCODING::UTF8);
+        ReportForNav.IsCustomLayout := TRUE;
+      END ELSE
+        REPORT.RDLCLAYOUT(ReportForNav.ReportID,InStream);
+
+      ReportForNav.LoadRdlc(InStream);
+      IF COPYSTR(LOWERCASE(GETURL(CLIENTTYPE::Current, COMPANYNAME, OBJECTTYPE::Codeunit, 1)), 1, 14) = 'dynamicsnav://' THEN BEGIN
+        ReportForNav.CheckClientAddIn();
+        ReportForNavClient := ReportForNavClient.Report(ReportForNav.Definition);
+        ReportForNavAllowDesign := ReportForNavClient.HasDesigner AND NOT ReportForNav.ParameterMode;
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnSave@5010(Base64Layout@1000 : Text);
+    VAR
+      CustomReportLayout@1002 : Record 9650;
+      ReportLayoutSelection@1003 : Record 9651;
+      LayoutId@1004 : Variant;
+      TempBlob@1007 : Record 99008535;
+      OutStream@1006 : OutStream;
+      Bstr@1005 : BigText;
+      EmptyLayout@1001 : Text;
+    BEGIN
+      EmptyLayout := FORMAT(ReportLayoutSelection."Custom Report Layout Code");
+      LayoutId := ReportLayoutSelection."Custom Report Layout Code";
+      IF ReportLayoutSelection.HasCustomLayout(ReportForNav.ReportID) = 1 THEN BEGIN
+        IF FORMAT(ReportLayoutSelection.GetTempLayoutSelected) <> EmptyLayout THEN BEGIN
+          LayoutId := ReportLayoutSelection.GetTempLayoutSelected;
+        END ELSE BEGIN
+          IF ReportLayoutSelection.GET(ReportForNav.ReportID, COMPANYNAME) THEN BEGIN
+          LayoutId := ReportLayoutSelection."Custom Report Layout Code";
+          END;
+        END;
+      END ELSE BEGIN
+        IF CONFIRM('Default custom layout not found. Create one?') THEN;
+      END;
+      IF FORMAT(LayoutId) <> EmptyLayout THEN BEGIN
+        TempBlob.Blob.CREATEOUTSTREAM(OutStream);
+        Bstr.ADDTEXT(Base64Layout);
+        Bstr.WRITE(OutStream);
+        CustomReportLayout.GET(LayoutId);
+        CustomReportLayout.ImportLayoutBlob(TempBlob, 'RDL');
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnParameters@5008(Parameters@1000 : Text);
+    BEGIN
+      ReportForNav.Parameters := REPORT.RUNREQUESTPAGE(ReportForNav.ReportID, Parameters);
+    END;
+
+    EVENT ReportForNav@5000::OnPreview@5009(Parameters@1000 : Text;FileName@1005 : Text);
+    VAR
+      PdfFile@1002 : File;
+      InStream@1003 : InStream;
+      OutStream@1004 : OutStream;
+    BEGIN
+      COMMIT;
+      PdfFile.CREATETEMPFILE;
+      PdfFile.CREATEOUTSTREAM(OutStream);
+      REPORT.SAVEAS(ReportForNav.ReportID, Parameters, REPORTFORMAT::Pdf, OutStream);
+      PdfFile.CREATEINSTREAM(InStream);
+      ReportForNavClient.ShowDesigner;
+      IF ReportForNav.IsValidPdf(PdfFile.NAME) THEN DOWNLOADFROMSTREAM(InStream, '', '', '', FileName);
+      PdfFile.CLOSE;
+    END;
+
+    EVENT ReportForNav@5000::OnPreSection@5012(DataItemId@1000000000 : Text;SectionId@1000000001 : Text);
+    BEGIN
+    END;
+
+    EVENT ReportForNav@5000::OnPostSection@50013(DataItemId@1000000000 : Text;SectionId@1000000001 : Text);
+    BEGIN
+    END;
+
+    EVENT ReportForNav@5000::OnClientOperation@5008(Args@1000 : DotNet "'mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Array");
+    VAR
+      op@1001 : Text;
+      FileMgmt@1002 : Codeunit 419;
+      Process@1006 : DotNet "'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Diagnostics.Process" RUNONCLIENT;
+      PathObj@1005 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Path" RUNONCLIENT;
+      FileVersionInfo@1003 : DotNet "'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Diagnostics.FileVersionInfo" RUNONCLIENT;
+      DirectoryHelper@1004 : DotNet "'mscorlib'.System.IO.Directory" RUNONCLIENT;
+    BEGIN
+      op := Args.GetValue(0);
+      CASE op OF
+        'TempPath': ReportForNav.Result := PathObj.GetTempPath();
+        'FileExists': ReportForNav.Result := FileMgmt.ClientFileExists(Args.GetValue(1));
+        'DirectoryExists': ReportForNav.Result := FileMgmt.ClientDirectoryExists(Args.GetValue(1));
+        'ProcessLocation': ReportForNav.Result := Process.GetCurrentProcess().MainModule.FileName;
+        'FileVersion': ReportForNav.Result := FileVersionInfo.GetVersionInfo(Args.GetValue(1)).FileVersion;
+        'DeleteFile': FileMgmt.DeleteClientFile(Args.GetValue(1));
+        'DeleteDirectory': IF STRLEN(Args.GetValue(1)) > 20 THEN
+          IF FileMgmt.ClientDirectoryExists(Args.GetValue(1)) THEN
+            DirectoryHelper.Delete(FORMAT(Args.GetValue(1)), TRUE);
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnCheckForNavClientVersion@5007();
+    BEGIN
+      ReportForNavClient := ReportForNavClient.Report();
+      IF ReportForNav.MyFileVersion <> ReportForNavClient.MyFileVersion THEN
+        ERROR('You have version %1 of the Reports ForNAV assembly here:\\%2\\Please close your NAV client and update it to version %3.',
+              ReportForNavClient.MyFileVersion, ReportForNavClient.MyFileName, ReportForNav.MyFileVersion);
+    END;
+
+    EVENT ReportForNav@5000::OnSelectPrinter@5006();
+    BEGIN
+      ReportForNav.PrinterSettings.PageSettings := ReportForNavClient.SelectPrinter(ReportForNav.PrinterSettings.PrinterName,ReportForNav.PrinterSettings.ShowPrinterDialog,ReportForNav.PrinterSettings.PageSettings);
+    END;
+
+    EVENT ReportForNav@5000::OnPrint@5005(InStream@1000000000 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Stream");
+    VAR
+      ClientFileName@1000000001 : Text[255];
+    BEGIN
+      DOWNLOADFROMSTREAM(InStream, '', '<TEMP>', '', ClientFileName);
+      ReportForNavClient.Print(ClientFileName);
+    END;
+
+    EVENT ReportForNav@5000::OnDesign@5007(Data@1001 : Text);
+    BEGIN
+      ReportForNavClient.Data := Data;
+      WHILE ReportForNavClient.DesignReport DO BEGIN
+        ReportForNav.HandleRequest(ReportForNavClient.GetRequest());
+        SLEEP(100);
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnView@5008(ClientFileName@1000000000 : Text;Parameters@1000000001 : Text;ServerFileName@1000000002 : Text);
+    VAR
+      ServerFile@1000000003 : File;
+      ServerInStream@1000000004 : InStream;
+    BEGIN
+      ServerFile.OPEN(ServerFileName);
+      ServerFile.CREATEINSTREAM(ServerInStream);
+      DOWNLOADFROMSTREAM(ServerInStream,'','','',ClientFileName);
+    END;
+
+    EVENT ReportForNav@5000::OnMessage@5009(Operation@1000000000 : Text;Parameter@1000000001 : Text;ParameterNo@1000000002 : Integer);
+    BEGIN
+      CASE Operation OF
+        'Open'    : ReportForNavDialog.OPEN(Parameter);
+        'Update'  : ReportForNavDialog.UPDATE(ParameterNo,Parameter);
+        'Close'   : ReportForNavDialog.CLOSE();
+        'Message' : MESSAGE(Parameter);
+        'Error'   : ERROR(Parameter);
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnPrintPreview@5011(InStream@1000000000 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Stream";Preview@1000000001 : Boolean);
+    VAR
+      ClientFileName@1000000002 : Text[255];
+    BEGIN
+      DOWNLOADFROMSTREAM(InStream, '', '<TEMP>', '', ClientFileName);
+      WHILE ReportForNavClient.PrintPreviewDialog(ClientFileName,ReportForNav.PrinterSettings.PrinterName,Preview) DO BEGIN
+        ReportForNav.HandlePrintPreviewRequest(ReportForNavClient.GetPrintPreviewRequest());
+        SLEEP(100);
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnTotals@5004(DataItemId@1000000000 : Text;Operation@1000000001 : Text;GroupTotalFieldNo@1000000002 : Integer);
+    VAR
+      CurrRecRef@1000000003 : RecordRef;
+      NextRecRef@1000000004 : RecordRef;
+      CurrKeyRef@1000000005 : KeyRef;
+      NextKeyRef@1000000006 : KeyRef;
+      FieldIndex@1000000007 : Integer;
+      GroupFieldIndex@1000000008 : Integer;
+    BEGIN
+      // Do not change (Autogenerated by Reports ForNAV) - Instead change the Create Totals, Total Fields or Group Total Fields properties on the Data item in the ForNAV designer
+      CASE DataItemId OF
+        'Header': WITH Header DO CASE Operation OF
+           'Add': BEGIN
+                ReportForNav.AddTotal(DataItemId,0,Amount);
+                ReportForNav.AddTotal(DataItemId,1,"Amount Including VAT");
+              END;
+           'Restore': BEGIN
+                 Amount := ReportForNav.RestoreTotal(DataItemId,0,GroupTotalFieldNo);
+                 "Amount Including VAT" := ReportForNav.RestoreTotal(DataItemId,1,GroupTotalFieldNo);
+              END;
+        END;  'Line': WITH Line DO CASE Operation OF
+           'Add': BEGIN
+                ReportForNav.AddTotal(DataItemId,0,Amount);
+              END;
+           'Restore': BEGIN
+                 Amount := ReportForNav.RestoreTotal(DataItemId,0,GroupTotalFieldNo);
+              END;
+        END;  'VATAmountLine': WITH VATAmountLine DO CASE Operation OF
+           'Add': BEGIN
+                ReportForNav.AddTotal(DataItemId,0,"VAT %");
+                ReportForNav.AddTotal(DataItemId,1,"Line Amount");
+                ReportForNav.AddTotal(DataItemId,2,"VAT Amount");
+                ReportForNav.AddTotal(DataItemId,3,"VAT Base");
+              END;
+           'Restore': BEGIN
+                 "VAT %" := ReportForNav.RestoreTotal(DataItemId,0,GroupTotalFieldNo);
+                 "Line Amount" := ReportForNav.RestoreTotal(DataItemId,1,GroupTotalFieldNo);
+                 "VAT Amount" := ReportForNav.RestoreTotal(DataItemId,2,GroupTotalFieldNo);
+                 "VAT Base" := ReportForNav.RestoreTotal(DataItemId,3,GroupTotalFieldNo);
+              END;
+        END;
+      END;
+    END;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+    <?xml version="1.0" encoding="utf-8"?>
+<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
+  <Description>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</Description>
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="DataSource">
+      <ConnectionProperties>
+        <DataProvider>SQL</DataProvider>
+        <ConnectString />
+      </ConnectionProperties>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>15b012bd-1592-48ac-9a2a-9c07ab0364ba</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <Height>2in</Height>
+        <Style />
+      </Body>
+      <Width>6.5in</Width>
+      <Page>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <rd:ReportUnitType>Invalid</rd:ReportUnitType>
+  <rd:ReportID>fdda7588-d241-407c-8c6b-5fed753f1f0f</rd:ReportID>
+  <DataSets>
+    <DataSet Name="DataSet_Result">
+      <Fields>
+        <Field Name="HasDiscount">
+          <DataField>HasDiscount</DataField>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>DataSource</DataSourceName>
+        <CommandText />
+      </Query>
+      <rd:DataSetInfo>
+        <rd:DataSetName>DataSet</rd:DataSetName>
+        <rd:SchemaPath>Report.xsd</rd:SchemaPath>
+        <rd:TableName>Result</rd:TableName>
+      </rd:DataSetInfo>
+    </DataSet>
+  </DataSets>
+</Report>
+    END_OF_RDLDATA
+  }
+}
+
