@@ -2,8 +2,8 @@ OBJECT Table 84999 ForNAV Document Line Buffer
 {
   OBJECT-PROPERTIES
   {
-    Date=22-03-17;
-    Time=08:35:21;
+    Date=07-04-17;
+    Time=15:54:39;
     Modified=Yes;
     Version List=FORNAVBETA;
   }
@@ -103,7 +103,6 @@ OBJECT Table 84999 ForNAV Document Line Buffer
       REPEAT
         FindAndSetField(RecRef, Fld.FieldName, Fld."No.");
       UNTIL Fld.NEXT = 0;
-      FindAndSetField(RecRef, FIELDNAME("VAT %"), "VAT %");
     END;
 
     LOCAL PROCEDURE FindAndSetField@1000000004(VAR RecRef@1000000003 : RecordRef;FieldName@1000000002 : Text;FieldNo@1000000004 : Integer);
