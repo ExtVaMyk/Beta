@@ -1,0 +1,57 @@
+OBJECT Codeunit 70019 ForNAV Notifications
+{
+  OBJECT-PROPERTIES
+  {
+    Date=01-05-17;
+    Time=12:00:00;
+    Version List=FORNAVBETA;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+
+    [EventSubscriber(Codeunit,1,OnAfterFindPrinter,"",Skip,Skip)]
+    LOCAL PROCEDURE OnFindPrinter@2(ReportID@1000 : Integer;VAR PrinterName@1001 : Text[250]);
+    BEGIN
+      ShowSetupNotification;
+    END;
+
+    LOCAL PROCEDURE ShowSetupNotification@1();
+    VAR
+      MyNotifications@1006 : Record 1518;
+      ForNAVSetup@1001 : Record 70000;
+      NotificationIDs@1004 : Codeunit 70022;
+      MyNotification@1000 : Notification;
+      ForNAVNotSetup@1002 : TextConst 'ENU=ForNAV is installed but not setup. Do you want to do this now?';
+      Yes@1003 : TextConst 'ENU=Yes';
+      NoAndDontAskAgain@1005 : TextConst 'ENU=No, and please don''t remind me again.';
+    BEGIN
+      IF ForNAVSetup.GET THEN
+        EXIT;
+
+      IF NOT MyNotifications.IsEnabled(NotificationIDs.SetupForNAV) THEN
+        EXIT;
+
+      MyNotification.ID := NotificationIDs.SetupForNAV;
+      MyNotification.MESSAGE := ForNAVNotSetup;
+      MyNotification.ADDACTION(Yes, CODEUNIT::"ForNAV Notification Actions", 'SetupForNAV');
+      MyNotification.ADDACTION(NoAndDontAskAgain, CODEUNIT::"ForNAV Notification Actions", 'DisableSetup');
+      MyNotification.SEND;
+    END;
+
+    BEGIN
+    {
+      Copyright (c) 2017 ForNAV ApS - All Rights Reserved
+      The intellectual work and technical concepts contained in this file are proprietary to ForNAV.
+      Unauthorized reverse engineering, distribution or copying of this file, parts hereof, or derived work, via any medium is strictly prohibited without written permission from ForNAV ApS.
+      This source code is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    }
+    END.
+  }
+}
+

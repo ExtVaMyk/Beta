@@ -1,0 +1,210 @@
+OBJECT Codeunit 70029 ForNAV Replace Report Sel.
+{
+  OBJECT-PROPERTIES
+  {
+    Date=02-06-17;
+    Time=12:00:00;
+    Version List=FORNAVCTP2;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+            ReplaceSalesOrderConfirmation;
+            ReplaceSalesInvoice;
+            ReplaceSalesCreditMemo;
+            ReplaceSalesShipment;
+            ReplaceSalesQuote;
+            ReplacePurchaseOrder;
+            ReplacePurchaseInvoice;
+            ReplacePurchaseQuote;
+            ReplacePurchaseCreditMemo;
+            //ReplaceReminder;
+          END;
+
+  }
+  CODE
+  {
+
+    LOCAL PROCEDURE ReplaceSalesOrderConfirmation@1000000001();
+    VAR
+      ReportSelections@1000000000 : Record 77;
+    BEGIN
+      WITH ReportSelections DO BEGIN
+        SETRANGE(Usage, Usage::"S.Order");
+        IF NOT ISEMPTY THEN
+          DELETEALL;
+
+        Usage := Usage::"S.Order";
+        Sequence := '1';
+        "Report ID" := FindReportID('Order Confirmation');
+        INSERT;
+      END;
+    END;
+
+    LOCAL PROCEDURE ReplaceSalesInvoice@1000000000();
+    VAR
+      ReportSelections@1000000000 : Record 77;
+    BEGIN
+      WITH ReportSelections DO BEGIN
+        SETRANGE(Usage, Usage::"S.Invoice");
+        IF NOT ISEMPTY THEN
+          DELETEALL;
+
+        Usage := Usage::"S.Invoice";
+        Sequence := '1';
+        "Report ID" := FindReportID('Sales Invoice');
+        INSERT;
+      END;
+    END;
+
+    LOCAL PROCEDURE ReplaceSalesCreditMemo@1000000002();
+    VAR
+      ReportSelections@1000000000 : Record 77;
+    BEGIN
+      WITH ReportSelections DO BEGIN
+        SETRANGE(Usage, Usage::"S.Cr.Memo");
+        IF NOT ISEMPTY THEN
+          DELETEALL;
+
+        Usage := Usage::"S.Cr.Memo";
+        Sequence := '1';
+        "Report ID" := FindReportID('Credit Memo');
+        INSERT;
+      END;
+    END;
+
+    LOCAL PROCEDURE ReplaceSalesShipment@1000000009();
+    VAR
+      ReportSelections@1000000000 : Record 77;
+    BEGIN
+      WITH ReportSelections DO BEGIN
+        SETRANGE(Usage, Usage::"S.Shipment");
+        IF NOT ISEMPTY THEN
+          DELETEALL;
+
+        Usage := Usage::"S.Shipment";
+        Sequence := '1';
+        "Report ID" := FindReportID('Sales Shipment');
+        INSERT;
+      END;
+    END;
+
+    LOCAL PROCEDURE ReplaceSalesQuote@1000000008();
+    VAR
+      ReportSelections@1000000000 : Record 77;
+    BEGIN
+      WITH ReportSelections DO BEGIN
+        SETRANGE(Usage, Usage::"S.Quote");
+        IF NOT ISEMPTY THEN
+          DELETEALL;
+
+        Usage := Usage::"S.Quote";
+        Sequence := '1';
+        "Report ID" := FindReportID('Sales Quote');
+        INSERT;
+      END;
+    END;
+
+    LOCAL PROCEDURE ReplacePurchaseOrder@1000000005();
+    VAR
+      ReportSelections@1000000000 : Record 77;
+    BEGIN
+      WITH ReportSelections DO BEGIN
+        SETRANGE(Usage, Usage::"P.Order");
+        IF NOT ISEMPTY THEN
+          DELETEALL;
+
+        Usage := Usage::"P.Order";
+        Sequence := '1';
+        "Report ID" := FindReportID('Purchase Order');
+        INSERT;
+      END;
+    END;
+
+    LOCAL PROCEDURE ReplacePurchaseQuote@1000000010();
+    VAR
+      ReportSelections@1000000000 : Record 77;
+    BEGIN
+      WITH ReportSelections DO BEGIN
+        SETRANGE(Usage, Usage::"P.Quote");
+        IF NOT ISEMPTY THEN
+          DELETEALL;
+
+        Usage := Usage::"P.Quote";
+        Sequence := '1';
+        "Report ID" := FindReportID('Purchase Quote');
+        INSERT;
+      END;
+    END;
+
+    LOCAL PROCEDURE ReplacePurchaseInvoice@1000000003();
+    VAR
+      ReportSelections@1000000000 : Record 77;
+    BEGIN
+      WITH ReportSelections DO BEGIN
+        SETRANGE(Usage, Usage::"P.Invoice");
+        IF NOT ISEMPTY THEN
+          DELETEALL;
+
+        Usage := Usage::"P.Invoice";
+        Sequence := '1';
+        "Report ID" := FindReportID('Purchase Invoice');
+        INSERT;
+      END;
+    END;
+
+    LOCAL PROCEDURE ReplacePurchaseCreditMemo@1000000007();
+    VAR
+      ReportSelections@1000000000 : Record 77;
+    BEGIN
+      WITH ReportSelections DO BEGIN
+        SETRANGE(Usage, Usage::"P.Cr.Memo");
+        IF NOT ISEMPTY THEN
+          DELETEALL;
+
+        Usage := Usage::"P.Cr.Memo";
+        Sequence := '1';
+        "Report ID" := FindReportID('Purchase Credit Memo');
+        INSERT;
+      END;
+    END;
+
+    LOCAL PROCEDURE ReplaceReminder@1000000006();
+    VAR
+      ReportSelections@1000000000 : Record 77;
+    BEGIN
+      WITH ReportSelections DO BEGIN
+        SETRANGE(Usage, Usage::Reminder);
+        IF NOT ISEMPTY THEN
+          DELETEALL;
+
+        Usage := Usage::Reminder;
+        Sequence := '1';
+        "Report ID" := FindReportID('Reminder');
+        INSERT;
+      END;
+    END;
+
+    LOCAL PROCEDURE FindReportID@1000000004(ReportName@1000000001 : Text) : Integer;
+    VAR
+      Obj@1000000000 : Record 2000000001;
+    BEGIN
+      WITH Obj DO BEGIN
+        SETRANGE(Type, Obj.Type::Report);
+        SETRANGE(Name, 'ForNAV ' + ReportName);
+        FINDFIRST;
+        EXIT(ID);
+      END;
+    END;
+
+    BEGIN
+    {
+      Copyright (c) 2017 ForNAV ApS - All Rights Reserved
+      The intellectual work and technical concepts contained in this file are proprietary to ForNAV.
+      Unauthorized reverse engineering, distribution or copying of this file, parts hereof, or derived work, via any medium is strictly prohibited without written permission from ForNAV ApS.
+      This source code is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    }
+    END.
+  }
+}
+

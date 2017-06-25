@@ -1,0 +1,51 @@
+OBJECT Codeunit 70997 ForNAV Create Test Setup
+{
+  OBJECT-PROPERTIES
+  {
+    Date=01-05-17;
+    Time=12:00:00;
+    Version List=FORNAVBETA;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+            CreateVATClause;
+            ChangeVATPostingSetup;
+            ChangeExistingSalesInvoiceLines;
+            ChangeReportSelections;
+          END;
+
+  }
+  CODE
+  {
+
+    LOCAL PROCEDURE CreateVATClause@1000000001();
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE ChangeVATPostingSetup@1000000002();
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE ChangeExistingSalesInvoiceLines@1000000000();
+    VAR
+      SalesInvoiceLine@1000000000 : Record 113;
+    BEGIN
+      SalesInvoiceLine.MODIFYALL("VAT Clause Code" , 'TEST');
+    END;
+
+    LOCAL PROCEDURE ChangeReportSelections@1000000003();
+    BEGIN
+    END;
+
+    BEGIN
+    {
+      Copyright (c) 2017 ForNAV ApS - All Rights Reserved
+      The intellectual work and technical concepts contained in this file are proprietary to ForNAV.
+      Unauthorized reverse engineering, distribution or copying of this file, parts hereof, or derived work, via any medium is strictly prohibited without written permission from ForNAV ApS.
+      This source code is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    }
+    END.
+  }
+}
+

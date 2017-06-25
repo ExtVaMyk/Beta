@@ -1,0 +1,92 @@
+OBJECT Codeunit 70999 ForNAV Test
+{
+  OBJECT-PROPERTIES
+  {
+    Date=13-06-17;
+    Time=11:31:51;
+    Version List=FORNAVCTP2;
+  }
+  PROPERTIES
+  {
+    Subtype=Test;
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+
+    [Test]
+    PROCEDURE TestDiscountForDocument@1000000000();
+    VAR
+      SalesHeader@1000000001 : Record 36;
+      SalesLine@1000000000 : Record 37;
+      ForNAVCheckDocumentDiscount@1000000002 : Codeunit 70000;
+    BEGIN
+      IF SalesHeader.FINDSET THEN REPEAT
+        SalesLine.SETRANGE("Document No.", SalesHeader."No.");
+        SalesLine.SETRANGE("Document Type", SalesHeader."Document Type");
+        SalesLine.SETFILTER("Line Discount %", '<>0');
+        IF SalesLine.ISEMPTY THEN BEGIN
+          IF ForNAVCheckDocumentDiscount.HasDiscount(SalesHeader) THEN
+            ERROR('No Discount expected for record ' + FORMAT(SalesHeader));
+        END ELSE BEGIN
+          IF NOT ForNAVCheckDocumentDiscount.HasDiscount(SalesHeader) THEN
+            ERROR('Discount expected for record ' + FORMAT(SalesHeader));
+        END;
+      UNTIL SalesHeader.NEXT = 0;
+    END;
+
+    [Test]
+    PROCEDURE TestCreateVATAmoutLine@1000000001();
+    VAR
+      SalesHeader@1000000001 : Record 36;
+      SalesInvoiceHeader@1000000003 : Record 112;
+      VATAmountLine@1000000000 : TEMPORARY Record 290;
+      ForNAVGetVatAmountLines@1000000002 : Codeunit 70001;
+    BEGIN
+      IF SalesHeader.FINDSET THEN REPEAT
+        ForNAVGetVatAmountLines.GetVatAmountLines(SalesHeader, VATAmountLine);
+      UNTIL SalesHeader.NEXT = 0;
+
+      IF SalesInvoiceHeader.FINDSET THEN REPEAT
+        ForNAVGetVatAmountLines.GetVatAmountLines(SalesInvoiceHeader, VATAmountLine);
+      UNTIL SalesInvoiceHeader.NEXT = 0;
+    END;
+
+    [Test]
+    PROCEDURE TestReplaceReports@1000000002();
+    BEGIN
+      CODEUNIT.RUN(CODEUNIT::"ForNAV Replace Report Sel.");
+    END;
+
+    [Test]
+    PROCEDURE TestReports@1000000003();
+    VAR
+      Obj@1000000000 : Record 2000000001;
+      PathObj@1000000001 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Path" RUNONCLIENT;
+    BEGIN
+      Obj.SETRANGE(Type, Obj.Type::Report);
+      Obj.SETRANGE(ID, 70000, 70999);
+      Obj.FINDSET;
+      REPEAT
+      //  REPORT.RUN(Obj.ID); ToDo
+      UNTIL Obj.NEXT = 0;
+    END;
+
+    [ReportHandler]
+    PROCEDURE HandleRequestPage@1000000004(VAR ForNAVOrderConfirmation@1000000000 : Report 70000);
+    BEGIN
+    END;
+
+    BEGIN
+    {
+      Copyright (c) 2017 ForNAV ApS - All Rights Reserved
+      The intellectual work and technical concepts contained in this file are proprietary to ForNAV.
+      Unauthorized reverse engineering, distribution or copying of this file, parts hereof, or derived work, via any medium is strictly prohibited without written permission from ForNAV ApS.
+      This source code is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    }
+    END.
+  }
+}
+

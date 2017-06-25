@@ -1,0 +1,268 @@
+OBJECT Page 70005 ForNAV Setup Wizard
+{
+  OBJECT-PROPERTIES
+  {
+    Date=01-05-17;
+    Time=12:00:00;
+    Version List=FORNAVBETA;
+  }
+  PROPERTIES
+  {
+    SourceTable=Table70000;
+    PageType=NavigatePage;
+    SourceTableTemporary=Yes;
+    OnInit=BEGIN
+             LoadTopBanners;
+           END;
+
+    OnOpenPage=BEGIN
+                 INIT;
+                 IF ForNAVSetup.GET THEN BEGIN
+                   TRANSFERFIELDS(ForNAVSetup);
+                 END ELSE BEGIN
+                   "VAT Amount Specification" := "VAT Amount Specification"::"Multiple Lines";
+                 END;
+                 INSERT;
+
+                 Step := Step::Start;
+                 EnableControls;
+               END;
+
+    ActionList=ACTIONS
+    {
+      { 19      ;    ;ActionContainer;
+                      ActionContainerType=ActionItems }
+      { 18      ;1   ;Action    ;
+                      Name=ActionBack;
+                      CaptionML=ENU=Back;
+                      ApplicationArea=#Basic,#Suite;
+                      Enabled=BackActionEnabled;
+                      InFooterBar=Yes;
+                      Image=PreviousRecord;
+                      OnAction=BEGIN
+                                 NextStep(TRUE);
+                               END;
+                                }
+      { 16      ;1   ;Action    ;
+                      Name=ActionNext;
+                      CaptionML=ENU=Next;
+                      ApplicationArea=#Basic,#Suite;
+                      Enabled=NextActionEnabled;
+                      InFooterBar=Yes;
+                      Image=NextRecord;
+                      OnAction=BEGIN
+                                 NextStep(FALSE);
+                               END;
+                                }
+      { 8       ;1   ;Action    ;
+                      Name=ActionFinish;
+                      CaptionML=ENU=Finish;
+                      ApplicationArea=#Basic,#Suite;
+                      Enabled=FinishActionEnabled;
+                      InFooterBar=Yes;
+                      Image=Approve;
+                      OnAction=BEGIN
+                                 FinishAction;
+                               END;
+                                }
+    }
+  }
+  CONTROLS
+  {
+    { 5   ;0   ;Container ;
+                ContainerType=ContentArea }
+
+    { 4   ;1   ;Group     ;
+                Visible=TopBannerVisible AND NOT FinalStepVisible;
+                Editable=FALSE;
+                GroupType=Group }
+
+    { 3   ;2   ;Field     ;
+                ApplicationArea=#Basic,#Suite;
+                SourceExpr=MediaRepositoryStandard.Image;
+                Editable=FALSE;
+                ShowCaption=No }
+
+    { 2   ;1   ;Group     ;
+                Visible=TopBannerVisible AND FinalStepVisible;
+                Editable=FALSE;
+                GroupType=Group }
+
+    { 1   ;2   ;Field     ;
+                ApplicationArea=#Basic,#Suite;
+                SourceExpr=MediaRepositoryDone.Image;
+                Editable=FALSE;
+                ShowCaption=No }
+
+    { 11  ;1   ;Group     ;
+                Visible=FirstStepVisible;
+                GroupType=Group }
+
+    { 10  ;2   ;Group     ;
+                CaptionML=ENU=Welcome to ForNAV Setup;
+                Visible=FirstStepVisible;
+                GroupType=Group }
+
+    { 9   ;3   ;Group     ;
+                GroupType=Group;
+                InstructionalTextML=ENU="The ForNAV report package contains several documents that are optimized to work with our designer. " }
+
+    { 7   ;2   ;Group     ;
+                CaptionML=ENU=Let's go!;
+                GroupType=Group }
+
+    { 6   ;3   ;Group     ;
+                GroupType=Group;
+                InstructionalTextML=ENU=Choose Next so you can set up the ForNAV report package. }
+
+    { 15  ;1   ;Group     ;
+                Visible=FinalStepVisible;
+                GroupType=Group }
+
+    { 13  ;2   ;Group     ;
+                CaptionML=ENU=That's it!;
+                GroupType=Group }
+
+    { 12  ;3   ;Group     ;
+                GroupType=Group;
+                InstructionalTextML=ENU=To enable the ForNAV report package choose Finish. }
+
+    { 21  ;1   ;Group     ;
+                Visible=Step1Visible;
+                GroupType=Group;
+                InstructionalTextML=ENU=Select your VAT printing preferences and legal clause. }
+
+    { 22  ;2   ;Field     ;
+                SourceExpr="VAT Amount Specification" }
+
+    { 23  ;2   ;Field     ;
+                SourceExpr="Legal Conditions" }
+
+    { 17  ;1   ;Group     ;
+                Visible=Step2Visible;
+                GroupType=Group;
+                InstructionalTextML=ENU=Do you want replace the current report selections with the ForNAV reports? }
+
+    { 20  ;2   ;Field     ;
+                Name=ReplaceReports;
+                CaptionML=ENU=Replace Reports;
+                SourceExpr=ReplaceReports }
+
+  }
+  CODE
+  {
+    VAR
+      MediaRepositoryStandard@1001 : Record 9400;
+      MediaRepositoryDone@1000 : Record 9400;
+      ForNAVSetup@1005 : Record 70000;
+      TopBannerVisible@1003 : Boolean;
+      FinalStepVisible@1002 : Boolean;
+      FirstStepVisible@1004 : Boolean;
+      FinishActionEnabled@1007 : Boolean;
+      BackActionEnabled@1008 : Boolean;
+      NextActionEnabled@1009 : Boolean;
+      Step1Visible@1011 : Boolean;
+      Step2Visible@1010 : Boolean;
+      ReplaceReports@1012 : Boolean;
+      Step@1006 : 'Start,Step1,Step2,Finish';
+
+    LOCAL PROCEDURE LoadTopBanners@40();
+    BEGIN
+      IF MediaRepositoryStandard.GET('AssistedSetup-NoText-400px.png',FORMAT(CURRENTCLIENTTYPE)) AND
+         MediaRepositoryDone.GET('AssistedSetupDone-NoText-400px.png',FORMAT(CURRENTCLIENTTYPE))
+      THEN
+        TopBannerVisible := MediaRepositoryDone.Image.HASVALUE;
+    END;
+
+    LOCAL PROCEDURE EnableControls@2();
+    BEGIN
+      ResetControls;
+
+      CASE Step OF
+        Step::Start:
+          ShowStartStep;
+        Step::Step1:
+          ShowStep1;
+        Step::Step2:
+          ShowStep2;
+        Step::Finish:
+          ShowFinishStep;
+      END;
+    END;
+
+    LOCAL PROCEDURE ShowStartStep@24();
+    BEGIN
+      FirstStepVisible := TRUE;
+      FinishActionEnabled := FALSE;
+      BackActionEnabled := FALSE;
+    END;
+
+    LOCAL PROCEDURE ShowStep1@33();
+    BEGIN
+      Step1Visible := TRUE;
+    END;
+
+    LOCAL PROCEDURE ShowStep2@34();
+    BEGIN
+      Step2Visible := TRUE;
+    END;
+
+    LOCAL PROCEDURE ShowFinishStep@35();
+    BEGIN
+      FinalStepVisible := TRUE;
+      NextActionEnabled := FALSE;
+    END;
+
+    LOCAL PROCEDURE ResetControls@1();
+    BEGIN
+      FinishActionEnabled := 1=1;
+      BackActionEnabled := TRUE;
+      NextActionEnabled := TRUE;
+
+      FirstStepVisible := FALSE;
+      Step1Visible := FALSE;
+      Step2Visible := FALSE;
+      FinalStepVisible := FALSE;
+    END;
+
+    LOCAL PROCEDURE NextStep@41(Backwards@1000 : Boolean);
+    BEGIN
+      IF Backwards THEN
+        Step := Step - 1
+      ELSE
+        Step := Step + 1;
+
+      EnableControls;
+    END;
+
+    LOCAL PROCEDURE FinishAction@12();
+    BEGIN
+      StoreForNAVSetup;
+      //AssistedSetup.SetStatus(PAGE::"Email Setup Wizard",AssistedSetup.Status::Completed);
+      CurrPage.CLOSE;
+    END;
+
+    LOCAL PROCEDURE StoreForNAVSetup@3();
+    BEGIN
+      IF NOT ForNAVSetup.GET THEN BEGIN
+        ForNAVSetup.INIT;
+        ForNAVSetup.INSERT;
+      END;
+
+      ForNAVSetup.TRANSFERFIELDS(Rec,FALSE);
+      ForNAVSetup.MODIFY;
+      IF ReplaceReports THEN
+        ForNAVSetup.ReplaceReportSelection(TRUE);
+    END;
+
+    BEGIN
+    {
+      Copyright (c) 2017 ForNAV ApS - All Rights Reserved
+      The intellectual work and technical concepts contained in this file are proprietary to ForNAV.
+      Unauthorized reverse engineering, distribution or copying of this file, parts hereof, or derived work, via any medium is strictly prohibited without written permission from ForNAV ApS.
+      This source code is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    }
+    END.
+  }
+}
+

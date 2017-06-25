@@ -1,0 +1,36 @@
+OBJECT Codeunit 70528 ForNAV Edit Layout
+{
+  OBJECT-PROPERTIES
+  {
+    Date=01-05-17;
+    Time=12:00:00;
+    Version List=FORNAVBETA;
+  }
+  PROPERTIES
+  {
+    TableNo=9650;
+    OnRun=BEGIN
+            MESSAGE('1 Hello world from : ' + FORMAT(Rec));
+          END;
+
+  }
+  CODE
+  {
+
+    [EventSubscriber(Page,9650,OnBeforeActionEvent,EditForNAV,Skip,Skip)]
+    LOCAL PROCEDURE EditForNAVLayout@2(VAR Rec@1000 : Record 9650);
+    BEGIN
+      MESSAGE('Hello world from : ' + FORMAT(Rec));
+    END;
+
+    BEGIN
+    {
+      Copyright (c) 2017 ForNAV ApS - All Rights Reserved
+      The intellectual work and technical concepts contained in this file are proprietary to ForNAV.
+      Unauthorized reverse engineering, distribution or copying of this file, parts hereof, or derived work, via any medium is strictly prohibited without written permission from ForNAV ApS.
+      This source code is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    }
+    END.
+  }
+}
+

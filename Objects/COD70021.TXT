@@ -1,0 +1,42 @@
+OBJECT Codeunit 70021 ForNAV Initialize Notification
+{
+  OBJECT-PROPERTIES
+  {
+    Date=01-05-17;
+    Time=12:00:00;
+    Version List=FORNAVBETA;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+
+    [EventSubscriber(Page,1518,OnInitializingNotificationWithDefaultState,"",Skip,Skip)]
+    LOCAL PROCEDURE OnInitializingNotificationWithDefaultState@2();
+    VAR
+      MyNotifications@1000 : Record 1518;
+      SetupForNAVTxt@1001 : TextConst 'ENU=Ask to setup ForNAV.';
+      SetupForNAVDescriptionTxt@1002 : TextConst 'ENU=If you have ForNAV installed but don''t want to use it, switch off receiving the notification.';
+      NotificationIDs@1003 : Codeunit 70022;
+    BEGIN
+      MyNotifications.InsertDefaultWithTableNum(NotificationIDs.SetupForNAV,
+        SetupForNAVTxt,
+        SetupForNAVDescriptionTxt,
+        DATABASE::"ForNAV Setup");
+    END;
+
+    BEGIN
+    {
+      Copyright (c) 2017 ForNAV ApS - All Rights Reserved
+      The intellectual work and technical concepts contained in this file are proprietary to ForNAV.
+      Unauthorized reverse engineering, distribution or copying of this file, parts hereof, or derived work, via any medium is strictly prohibited without written permission from ForNAV ApS.
+      This source code is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    }
+    END.
+  }
+}
+
