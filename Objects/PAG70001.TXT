@@ -1,0 +1,37 @@
+OBJECT Page 70001 ForNAV Legal Cond. Translation
+{
+  OBJECT-PROPERTIES
+  {
+    Date=06-07-17;
+    Time=12:05:43;
+    Version List=FORNAVCTP3;
+  }
+  PROPERTIES
+  {
+    SourceTable=Table70001;
+    PageType=List;
+  }
+  CONTROLS
+  {
+    { 1000000000;0;Container;
+                ContainerType=ContentArea }
+
+    { 1000000001;1;Group  ;
+                Name=Group;
+                GroupType=Repeater }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Language Code" }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Legal Conditions" }
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

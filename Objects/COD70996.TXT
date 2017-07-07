@@ -1,0 +1,74 @@
+OBJECT Codeunit 70996 Create Large Sales Invoice
+{
+  OBJECT-PROPERTIES
+  {
+    Date=14-06-17;
+    Time=22:05:11;
+    Version List=FORNAVCTP3;
+  }
+  PROPERTIES
+  {
+    OnRun=VAR
+            Value@1000000000 : Code[20];
+          BEGIN
+            Value := CreateSalesHeaderWithNumber10000;
+            CreateALotOfSalesLinesWithNumber70000(Value);
+            PostTheLargeInvoice(Value);
+          END;
+
+  }
+  CODE
+  {
+
+    LOCAL PROCEDURE CreateSalesHeaderWithNumber10000@1000000001() : Code[20];
+    VAR
+      SalesHeader@1000000000 : Record 36;
+    BEGIN
+      WITH SalesHeader DO BEGIN
+        INIT;
+        "Document Type" := "Document Type"::Invoice;
+        INSERT(TRUE);
+        SetHideValidationDialog(TRUE);
+        VALIDATE("Bill-to Customer No.",  '10000');
+        VALIDATE("Sell-to Customer No.",  '10000');
+        MODIFY(TRUE);
+        EXIT("No.");
+      END;
+    END;
+
+    LOCAL PROCEDURE CreateALotOfSalesLinesWithNumber70000@1000000002(Value@1000000002 : Code[20]);
+    VAR
+      SalesLine@1000000001 : Record 37;
+      i@1000000000 : Integer;
+    BEGIN
+      FOR i := 1 TO 100 DO
+        WITH SalesLine DO BEGIN
+          INIT;
+          "Document Type" := "Document Type"::Invoice;
+          "Document No." := Value;
+          "Line No." := i * 10000;
+          INSERT(TRUE);
+          SetHideValidationDialog(TRUE);
+          VALIDATE(Type, Type::Item);
+          VALIDATE("No.", '70000');
+          VALIDATE(Quantity, 1);
+          MODIFY(TRUE);
+        END;
+    END;
+
+    LOCAL PROCEDURE PostTheLargeInvoice@1000000003(Value@1000000000 : Code[20]);
+    VAR
+      SalesHeader@1000000002 : Record 36;
+      SalesPost@1000000001 : Codeunit 80;
+    BEGIN
+      SalesHeader.GET(SalesHeader."Document Type"::Invoice, Value);
+      SalesHeader.Ship := TRUE;
+      SalesHeader.Invoice := TRUE;
+      SalesPost.RUN(SalesHeader);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

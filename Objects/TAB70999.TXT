@@ -4,7 +4,7 @@ OBJECT Table 70999 ForNAV Document Line Buffer
   {
     Date=01-05-17;
     Time=12:00:00;
-    Version List=FORNAVBETA;
+    Version List=FORNAVCTP3;
   }
   PROPERTIES
   {

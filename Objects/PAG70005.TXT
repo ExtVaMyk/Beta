@@ -2,9 +2,9 @@ OBJECT Page 70005 ForNAV Setup Wizard
 {
   OBJECT-PROPERTIES
   {
-    Date=01-05-17;
-    Time=12:00:00;
-    Version List=FORNAVBETA;
+    Date=07-07-17;
+    Time=14:06:58;
+    Version List=FORNAVCTP3;
   }
   PROPERTIES
   {
@@ -148,6 +148,21 @@ OBJECT Page 70005 ForNAV Setup Wizard
                 CaptionML=ENU=Replace Reports;
                 SourceExpr=ReplaceReports }
 
+    { 1000000001;1;Group  ;
+                Visible=Step2Visible;
+                GroupType=Group;
+                InstructionalTextML=ENU=A watermark can make your reports look nicer. Do you want to import one? }
+
+    { 1000000000;2;Field  ;
+                Name=ImportWatermark;
+                SourceExpr=WatermarkTxt;
+                Editable=FALSE;
+                OnDrillDown=BEGIN
+                              ImportWatermarkFromClientFile;
+                            END;
+
+                ShowCaption=No }
+
   }
   CODE
   {
@@ -165,6 +180,7 @@ OBJECT Page 70005 ForNAV Setup Wizard
       Step2Visible@1010 : Boolean;
       ReplaceReports@1012 : Boolean;
       Step@1006 : 'Start,Step1,Step2,Finish';
+      WatermarkTxt@1000000000 : TextConst 'ENU=Click to import a watermark';
 
     LOCAL PROCEDURE LoadTopBanners@40();
     BEGIN

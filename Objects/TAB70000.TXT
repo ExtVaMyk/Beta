@@ -2,9 +2,9 @@ OBJECT Table 70000 ForNAV Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=02-06-17;
-    Time=12:00:00;
-    Version List=FORNAVCTP2;
+    Date=06-07-17;
+    Time=14:53:23;
+    Version List=FORNAVCTP3;
   }
   PROPERTIES
   {
@@ -13,6 +13,7 @@ OBJECT Table 70000 ForNAV Setup
   {
     { 1   ;   ;Primary Key         ;Code10         }
     { 10  ;   ;VAT Amount Specification;Option    ;OptionString=Multiple Lines,Always,Never }
+    { 60  ;   ;Watermark           ;BLOB           }
     { 80  ;   ;Legal Conditions    ;Text250        }
   }
   KEYS
@@ -63,6 +64,33 @@ OBJECT Table 70000 ForNAV Setup
       ForNAVPurchaseTemplate@1000 : Report 70528;
     BEGIN
       ForNAVPurchaseTemplate.RUNMODAL;
+    END;
+
+    PROCEDURE ImportWatermarkFromClientFile@21() : Boolean;
+    VAR
+      TempBlob@1000000001 : TEMPORARY Record 99008535;
+      FileMgt@1000000000 : Codeunit 419;
+      FileName@1001 : Text;
+    BEGIN
+      FileName := FileMgt.BLOBImport(TempBlob,'');
+
+      IF FileName <> '' THEN BEGIN
+        Watermark := TempBlob.Blob;
+      //  "File Extension" := COPYSTR(UPPERCASE(FileMgt.GetExtension(FileName)),1,250);
+        EXIT(TRUE);
+      END;
+
+      EXIT(FALSE);
+    END;
+
+    PROCEDURE GetLegalConditions@1000000002(LanguageCode@1000000001 : Code[10]) : Text;
+    VAR
+      ForNAVLegalCondTranslation@1000000000 : Record 70001;
+    BEGIN
+      IF ForNAVLegalCondTranslation.GET(LanguageCode) THEN
+        EXIT(ForNAVLegalCondTranslation."Legal Conditions");
+
+      EXIT("Legal Conditions");
     END;
 
     BEGIN

@@ -2,9 +2,9 @@ OBJECT Codeunit 70999 ForNAV Test
 {
   OBJECT-PROPERTIES
   {
-    Date=13-06-17;
-    Time=11:31:51;
-    Version List=FORNAVCTP2;
+    Date=07-07-17;
+    Time=13:49:49;
+    Version List=FORNAVCTP3;
   }
   PROPERTIES
   {
@@ -70,8 +70,29 @@ OBJECT Codeunit 70999 ForNAV Test
       Obj.SETRANGE(ID, 70000, 70999);
       Obj.FINDSET;
       REPEAT
-      //  REPORT.RUN(Obj.ID); ToDo
+      //  REPORT.RUN(Obj.ID); //ToDo
       UNTIL Obj.NEXT = 0;
+    END;
+
+    [Test]
+    PROCEDURE TestLegalConditions@1000000005();
+    VAR
+      ForNAVSetup@1000000000 : Record 70000;
+      ForNAVLegalCondTranslation@1000000001 : Record 70001;
+    BEGIN
+      ForNAVSetup.InitSetup;
+      ForNAVSetup."Legal Conditions" := 'English';
+      ForNAVSetup.MODIFY;
+      ForNAVLegalCondTranslation.DELETEALL;
+      ForNAVLegalCondTranslation."Language Code" := 'NLD';
+      ForNAVLegalCondTranslation."Legal Conditions" := 'Nederlands';
+      ForNAVLegalCondTranslation.INSERT;
+      IF ForNAVSetup.GetLegalConditions('') <> 'English' THEN
+        ERROR('Wrong Translation');
+
+      IF ForNAVSetup.GetLegalConditions('NLD') <> 'Nederlands' THEN
+        ERROR('Wrong Translation');
+
     END;
 
     [ReportHandler]

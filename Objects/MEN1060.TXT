@@ -2,9 +2,9 @@ OBJECT MenuSuite 1060 Dept - Add-on 10
 {
   OBJECT-PROPERTIES
   {
-    Date=01-05-17;
-    Time=12:00:00;
-    Version List=FORNAVBETA;
+    Date=07-07-17;
+    Time=14:42:01;
+    Version List=FORNAVCTP3;
   }
   PROPERTIES
   {
@@ -61,7 +61,6 @@ OBJECT MenuSuite 1060 Dept - Add-on 10
                                                                 RunObjectType=Page;
                                                                 RunObjectID=1822;
                                                                 Visible=Yes;
-                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
                                                                 DepartmentCategory=Administration }
     {                ;[{19A352FE-D90D-424E-B85F-CF3B8E98CF0E}] ;NextNodeID=[{0691571E-EDD6-473D-A139-81B1E9B887F2}] }
     { Menu           ;[{0691571E-EDD6-473D-A139-81B1E9B887F2}] ;Name=ForNAV;
@@ -82,15 +81,144 @@ OBJECT MenuSuite 1060 Dept - Add-on 10
                                                                 RunObjectID=70000;
                                                                 ParentNodeID=[{E849D80C-A6A0-4A75-9313-4A9691856383}];
                                                                 Visible=Yes;
-                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                NextNodeID=[{C331F6D8-9B94-4792-89D9-CEDBB101436C}];
                                                                 DepartmentCategory=Administration }
     { MenuGroup      ;[{E849D80C-A6A0-4A75-9313-4A9691856383}] ;Name=Application Setup;
                                                                 CaptionML=ENU=Application Setup;
                                                                 MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
                                                                 ParentNodeID=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
                                                                 Visible=Yes;
-                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                NextNodeID=[{F70AFFC2-22D2-4BE9-978C-0CE7BF384C2F}];
                                                                 FirstChild=[{CC9EF159-165D-4DCB-8A3B-05D408AB94F8}] }
+    { MenuItem       ;[{E6D918CF-B1F7-4171-A3E9-3C6E9B592EB1}] ;Name=Transformation Rules;
+                                                                CaptionML=ENU=Transformation Rules;
+                                                                ApplicationArea=#Basic,#Suite;
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1237;
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{C331F6D8-9B94-4792-89D9-CEDBB101436C}] ;Name=ForNAV Legal Cond. Translation;
+                                                                CaptionML=ENU=ForNAV Legal Cond. Translation;
+                                                                ApplicationArea=;
+                                                                MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=70001;
+                                                                ParentNodeID=[{E849D80C-A6A0-4A75-9313-4A9691856383}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Administration }
+    { MenuGroup      ;[{F70AFFC2-22D2-4BE9-978C-0CE7BF384C2F}] ;Name=Document Reports;
+                                                                CaptionML=ENU=Document Reports;
+                                                                MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                ParentNodeID=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                FirstChild=[{596FD082-176B-47D1-B4BA-5DABB301A6C3}] }
+    { MenuItem       ;[{62E72610-35DE-4B65-A0A8-4A4464FD467C}] ;Name=Sales Order Confirmation;
+                                                                CaptionML=ENU=Sales Order Confirmation;
+                                                                ApplicationArea=;
+                                                                MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=70000;
+                                                                ParentNodeID=[{596FD082-176B-47D1-B4BA-5DABB301A6C3}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{D30D76B6-37A6-4333-B5F6-F6688007A102}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuGroup      ;[{596FD082-176B-47D1-B4BA-5DABB301A6C3}] ;Name=Sales;
+                                                                CaptionML=ENU=Sales;
+                                                                MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                ParentNodeID=[{F70AFFC2-22D2-4BE9-978C-0CE7BF384C2F}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{4ECA5D9B-6E0A-46E8-BB54-57C0FEC90523}];
+                                                                FirstChild=[{62E72610-35DE-4B65-A0A8-4A4464FD467C}] }
+    { MenuItem       ;[{D30D76B6-37A6-4333-B5F6-F6688007A102}] ;Name=Sales Invoice;
+                                                                CaptionML=ENU=Sales Invoice;
+                                                                ApplicationArea=;
+                                                                MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=70001;
+                                                                ParentNodeID=[{596FD082-176B-47D1-B4BA-5DABB301A6C3}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{D689D68B-B7E6-44FA-A12E-412B7F969A7A}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{D689D68B-B7E6-44FA-A12E-412B7F969A7A}] ;Name=Sales Credit Memo;
+                                                                CaptionML=ENU=Sales Credit Memo;
+                                                                ApplicationArea=;
+                                                                MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=70002;
+                                                                ParentNodeID=[{596FD082-176B-47D1-B4BA-5DABB301A6C3}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{1D3B52D4-9A4A-45D3-A4EA-4EBB5B792BBA}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{1D3B52D4-9A4A-45D3-A4EA-4EBB5B792BBA}] ;Name=Sales Shipment;
+                                                                CaptionML=ENU=Sales Shipment;
+                                                                ApplicationArea=;
+                                                                MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=70003;
+                                                                ParentNodeID=[{596FD082-176B-47D1-B4BA-5DABB301A6C3}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{BB66C103-03B0-4D34-BAA5-44DE7EB35EB2}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{BB66C103-03B0-4D34-BAA5-44DE7EB35EB2}] ;Name=Sales Quote;
+                                                                CaptionML=ENU=Sales Quote;
+                                                                ApplicationArea=;
+                                                                MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=70004;
+                                                                ParentNodeID=[{596FD082-176B-47D1-B4BA-5DABB301A6C3}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuGroup      ;[{4ECA5D9B-6E0A-46E8-BB54-57C0FEC90523}] ;Name=Purchase;
+                                                                CaptionML=ENU=Purchase;
+                                                                MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                ParentNodeID=[{F70AFFC2-22D2-4BE9-978C-0CE7BF384C2F}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                FirstChild=[{3C3B5DC6-21F5-4E37-8C08-8E5938133520}] }
+    { MenuItem       ;[{3C3B5DC6-21F5-4E37-8C08-8E5938133520}] ;Name=Purchase Order;
+                                                                CaptionML=ENU=Purchase Order;
+                                                                ApplicationArea=;
+                                                                MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=70100;
+                                                                ParentNodeID=[{4ECA5D9B-6E0A-46E8-BB54-57C0FEC90523}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{59F08D28-DEAC-4A3B-96E2-A6D597DDE1F6}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{59F08D28-DEAC-4A3B-96E2-A6D597DDE1F6}] ;Name=Purchase Invoice;
+                                                                CaptionML=ENU=Purchase Invoice;
+                                                                ApplicationArea=;
+                                                                MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=70101;
+                                                                ParentNodeID=[{4ECA5D9B-6E0A-46E8-BB54-57C0FEC90523}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{4CC18C18-81F4-4235-ADCD-5168C7501B6E}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{4CC18C18-81F4-4235-ADCD-5168C7501B6E}] ;Name=Purchase Credit Memo;
+                                                                CaptionML=ENU=Purchase Credit Memo;
+                                                                ApplicationArea=;
+                                                                MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=70102;
+                                                                ParentNodeID=[{4ECA5D9B-6E0A-46E8-BB54-57C0FEC90523}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{F10C4BA6-49D1-41DC-834C-A7F72C44B7C5}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{F10C4BA6-49D1-41DC-834C-A7F72C44B7C5}] ;Name=Purchase Quote;
+                                                                CaptionML=ENU=Purchase Quote;
+                                                                ApplicationArea=;
+                                                                MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=70104;
+                                                                ParentNodeID=[{4ECA5D9B-6E0A-46E8-BB54-57C0FEC90523}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Reports and Analysis }
   }
 }
 

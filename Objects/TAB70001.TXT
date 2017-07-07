@@ -1,0 +1,32 @@
+OBJECT Table 70001 ForNAV Legal Cond. Translation
+{
+  OBJECT-PROPERTIES
+  {
+    Date=06-07-17;
+    Time=12:05:00;
+    Version List=FORNAVCTP3;
+  }
+  PROPERTIES
+  {
+  }
+  FIELDS
+  {
+    { 2   ;   ;Language Code       ;Code10        ;TableRelation=Language;
+                                                   CaptionML=ENU=Language Code }
+    { 80  ;   ;Legal Conditions    ;Text250        }
+  }
+  KEYS
+  {
+    {    ;Language Code                           ;Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

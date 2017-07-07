@@ -2,9 +2,9 @@ OBJECT Page 70000 ForNAV Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=02-06-17;
-    Time=12:00:00;
-    Version List=FORNAVCTP2;
+    Date=06-07-17;
+    Time=13:30:52;
+    Version List=FORNAVCTP3;
   }
   PROPERTIES
   {
@@ -20,6 +20,17 @@ OBJECT Page 70000 ForNAV Setup
     {
       { 1       ;    ;ActionContainer;
                       ActionContainerType=ActionItems }
+      { 1000000010;1 ;Action    ;
+                      Name=ImportWatermark;
+                      CaptionML=ENU=Import Watermark;
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Import;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 ImportWatermarkFromClientFile;
+                               END;
+                                }
       { 2       ;1   ;Action    ;
                       Name=ReplaceReports;
                       CaptionML=ENU=Replace Reportselection;
@@ -71,6 +82,15 @@ OBJECT Page 70000 ForNAV Setup
                                  DesignPurchaseTemplate;
                                END;
                                 }
+      { 1000000011;0 ;ActionContainer;
+                      ActionContainerType=RelatedInformation }
+      { 1000000013;1 ;Action    ;
+                      CaptionML=ENU=Translations;
+                      ToolTipML=ENU=View or edit translated legal conditions. Translated legal conditions are automatically inserted on documents according to the language code.;
+                      RunObject=Page 70001;
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Translations }
     }
   }
   CONTROLS
