@@ -1,0 +1,54 @@
+OBJECT Codeunit 70005 ForNAV Detect Localization
+{
+  OBJECT-PROPERTIES
+  {
+    Date=20-07-17;
+    Time=19:43:26;
+    Modified=Yes;
+    Version List=FORNAVCTP5;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+
+    PROCEDURE CheckLocalizationBasedOnTables@1(VAR ForNAVSetup@1000 : Record 70000);
+    VAR
+      AllObjWithCaption@1001 : Record 2000000058;
+    BEGIN
+      WITH AllObjWithCaption DO BEGIN
+        SETRANGE("Object Type", "Object Type"::Table);
+        SETRANGE("Object ID", 10000);
+        IF NOT ISEMPTY THEN BEGIN
+          ForNAVSetup.Localization := ForNAVSetup.Localization::"North America";
+          EXIT;
+        END;
+        SETRANGE("Object Type", "Object Type"::Table);
+        SETRANGE("Object ID", 11000, 49999);
+        IF NOT ISEMPTY THEN BEGIN
+          ForNAVSetup.Localization := ForNAVSetup.Localization::Other;
+          EXIT;
+        END;
+
+        ForNAVSetup.Localization := ForNAVSetup.Localization::"World Wide";
+
+      END;
+    END;
+
+    PROCEDURE ValidateCurrentLocalization@2(ForNAVSetup@1000 : Record 70000) : Boolean;
+    VAR
+      ForNAVSetupSetLocalization@1001 : Record 70000;
+    BEGIN
+      CheckLocalizationBasedOnTables(ForNAVSetupSetLocalization);
+      EXIT(ForNAVSetupSetLocalization.Localization = ForNAVSetup.Localization);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

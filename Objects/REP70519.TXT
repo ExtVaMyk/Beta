@@ -1,4 +1,4 @@
-OBJECT Report 70528 ForNAV Purchase Template
+OBJECT Report 70519 ForNAV Sales Templ. Sales Tax
 {
   OBJECT-PROPERTIES
   {
@@ -33,13 +33,12 @@ OBJECT Report 70528 ForNAV Purchase Template
   DATASET
   {
     { 2   ;    ;DataItem;Header              ;
-               DataItemTable=Table122;
+               DataItemTable=Table112;
                DataItemTableView=SORTING(No.);
                OnAfterGetRecord=BEGIN
                                   ReportForNav.PageNo := 1;
                                   ChangeLanguage("Language Code");
-                                  GetVatAmountLines;
-                                  GetVATClauses;
+                                  GetSalesTaxDetails;
                                 END;
 
                ReqFilterFields=No.,Posting Date;
@@ -50,24 +49,14 @@ OBJECT Report 70528 ForNAV Purchase Template
                SourceExpr=ForNAVCheckDocumentDiscount.HasDiscount(Header) }
 
     { 3   ;1   ;DataItem;Line                ;
-               DataItemTable=Table123;
+               DataItemTable=Table113;
                DataItemTableView=SORTING(Document No.,Line No.);
                DataItemLinkReference=Header;
                DataItemLink=Document No.=FIELD(No.) }
 
-    { 1000000001;1;DataItem;VATAmountLine    ;
-               DataItemTable=Table290;
-               DataItemTableView=SORTING(VAT Identifier,VAT Calculation Type,Tax Group Code,Use Tax,Positive);
-               OnPreDataItem=BEGIN
-                               IF NOT PrintVATAmountLines THEN
-                                 CurrReport.BREAK;
-                             END;
-
-               Temporary=Yes }
-
-    { 1000000002;1;DataItem;VATClause        ;
-               DataItemTable=Table560;
-               DataItemTableView=SORTING(Code);
+    { 1   ;1   ;DataItem;SalesTaxBuffer      ;
+               DataItemTable=Table70998;
+               DataItemTableView=SORTING(Primary Key);
                Temporary=Yes }
 
   }
@@ -128,37 +117,12 @@ OBJECT Report 70528 ForNAV Purchase Template
       CurrReport.LANGUAGE(Language.GetLanguageID(LanguageCode));
     END;
 
-    LOCAL PROCEDURE GetVatAmountLines@1000000000();
+    LOCAL PROCEDURE GetSalesTaxDetails@1();
     VAR
-      ForNAVGetVatAmountLines@1000000000 : Codeunit 70001;
+      ForNAVGetSalesTaxDetails@1000 : Codeunit 70004;
     BEGIN
-      VATAmountLine.DELETEALL;
-      ForNAVGetVatAmountLines.GetVatAmountLines(Header, VATAmountLine);
-    END;
-
-    LOCAL PROCEDURE GetVATClauses@1000000001();
-    VAR
-      ForNAVGetVatClause@1000000000 : Codeunit 70002;
-    BEGIN
-      VATClause.DELETEALL;
-      ForNAVGetVatClause.GetVATClauses(VATAmountLine, VATClause, Header."Language Code");
-    END;
-
-    LOCAL PROCEDURE PrintVATAmountLines@1000000003() : Boolean;
-    VAR
-      ForNAVSetup@1000000000 : Record 70000;
-    BEGIN
-      WITH ForNAVSetup DO BEGIN
-        GET;
-        CASE "VAT Amount Specification" OF
-          "VAT Amount Specification"::Always:
-            EXIT(TRUE);
-          "VAT Amount Specification"::"Multiple Lines":
-            EXIT(VATAmountLine.COUNT > 1);
-          "VAT Amount Specification"::Never:
-            EXIT(FALSE);
-        END;
-      END;
+      SalesTaxBuffer.DELETEALL;
+      ForNAVGetSalesTaxDetails.GetSalesTax(Header, SalesTaxBuffer);
     END;
 
     EVENT ReportForNav@5000::OnInit@5002();
@@ -368,19 +332,6 @@ OBJECT Report 70528 ForNAV Purchase Template
            'Restore': BEGIN
                  Amount := ReportForNav.RestoreTotal(DataItemId,0,GroupTotalFieldNo);
               END;
-        END;  'VATAmountLine': WITH VATAmountLine DO CASE Operation OF
-           'Add': BEGIN
-                ReportForNav.AddTotal(DataItemId,0,"VAT %");
-                ReportForNav.AddTotal(DataItemId,1,"Line Amount");
-                ReportForNav.AddTotal(DataItemId,2,"VAT Amount");
-                ReportForNav.AddTotal(DataItemId,3,"VAT Base");
-              END;
-           'Restore': BEGIN
-                 "VAT %" := ReportForNav.RestoreTotal(DataItemId,0,GroupTotalFieldNo);
-                 "Line Amount" := ReportForNav.RestoreTotal(DataItemId,1,GroupTotalFieldNo);
-                 "VAT Amount" := ReportForNav.RestoreTotal(DataItemId,2,GroupTotalFieldNo);
-                 "VAT Base" := ReportForNav.RestoreTotal(DataItemId,3,GroupTotalFieldNo);
-              END;
         END;
       END;
     END;
@@ -398,7 +349,7 @@ OBJECT Report 70528 ForNAV Purchase Template
   {
     <?xml version="1.0" encoding="utf-8"?>
 <Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
-  <Description>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</Description>
+  <Description>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</Description>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
     <DataSource Name="DataSource">
@@ -407,7 +358,7 @@ OBJECT Report 70528 ForNAV Purchase Template
         <ConnectString />
       </ConnectionProperties>
       <rd:SecurityType>None</rd:SecurityType>
-      <rd:DataSourceID>fdbff1c7-4ca5-42ff-8c20-6e9789ab1a91</rd:DataSourceID>
+      <rd:DataSourceID>7dbeb113-c950-4bc6-bd18-dedd726651b3</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <ReportSections>
@@ -423,7 +374,7 @@ OBJECT Report 70528 ForNAV Purchase Template
     </ReportSection>
   </ReportSections>
   <rd:ReportUnitType>Invalid</rd:ReportUnitType>
-  <rd:ReportID>32810c4f-4b89-4b3a-ad07-99b1940aad1a</rd:ReportID>
+  <rd:ReportID>525cdfc1-8a25-40dd-a581-e34a6e71adc0</rd:ReportID>
 </Report>
     END_OF_RDLDATA
   }

@@ -2,9 +2,10 @@ OBJECT Table 70000 ForNAV Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=06-07-17;
-    Time=14:53:23;
-    Version List=FORNAVCTP3;
+    Date=20-07-17;
+    Time=20:02:29;
+    Modified=Yes;
+    Version List=FORNAVCTP5;
   }
   PROPERTIES
   {
@@ -12,8 +13,15 @@ OBJECT Table 70000 ForNAV Setup
   FIELDS
   {
     { 1   ;   ;Primary Key         ;Code10         }
-    { 10  ;   ;VAT Amount Specification;Option    ;OptionString=Multiple Lines,Always,Never }
+    { 9   ;   ;Localization        ;Option        ;OnValidate=BEGIN
+                                                                IF Localization = Localization::"North America" THEN
+                                                                  "VAT Amount Specification" := "VAT Amount Specification"::"N/A. (Sales Tax)";
+                                                              END;
+
+                                                   OptionString=World Wide,North America,Other }
+    { 10  ;   ;VAT Amount Specification;Option    ;OptionString=Multiple Lines,Always,Never,N/A. (Sales Tax) }
     { 60  ;   ;Watermark           ;BLOB           }
+    { 70  ;   ;Payment Note        ;Text250        }
     { 80  ;   ;Legal Conditions    ;Text250        }
   }
   KEYS
@@ -52,18 +60,25 @@ OBJECT Table 70000 ForNAV Setup
       CODEUNIT.RUN(CODEUNIT::"ForNAV Test Runner");
     END;
 
+    PROCEDURE DesignTemplate@1000000003();
+    VAR
+      Template@1000 : Report 70527;
+    BEGIN
+      Template.RUNMODAL;
+    END;
+
     PROCEDURE DesignSalesTemplate@3();
     VAR
-      ForNAVSalesTemplate@1000 : Report 70529;
+      SalesTemplate@1000 : Report 70529;
     BEGIN
-      ForNAVSalesTemplate.RUNMODAL;
+      SalesTemplate.RUNMODAL;
     END;
 
     PROCEDURE DesignPurchaseTemplate@1000000001();
     VAR
-      ForNAVPurchaseTemplate@1000 : Report 70528;
+      PurchaseTemplate@1000 : Report 70528;
     BEGIN
-      ForNAVPurchaseTemplate.RUNMODAL;
+      PurchaseTemplate.RUNMODAL;
     END;
 
     PROCEDURE ImportWatermarkFromClientFile@21() : Boolean;
@@ -76,7 +91,6 @@ OBJECT Table 70000 ForNAV Setup
 
       IF FileName <> '' THEN BEGIN
         Watermark := TempBlob.Blob;
-      //  "File Extension" := COPYSTR(UPPERCASE(FileMgt.GetExtension(FileName)),1,250);
         EXIT(TRUE);
       END;
 
@@ -85,12 +99,26 @@ OBJECT Table 70000 ForNAV Setup
 
     PROCEDURE GetLegalConditions@1000000002(LanguageCode@1000000001 : Code[10]) : Text;
     VAR
-      ForNAVLegalCondTranslation@1000000000 : Record 70001;
+      LegalCondTranslation@1000000000 : Record 70001;
     BEGIN
-      IF ForNAVLegalCondTranslation.GET(LanguageCode) THEN
-        EXIT(ForNAVLegalCondTranslation."Legal Conditions");
+      IF LegalCondTranslation.GET(LanguageCode) THEN
+        EXIT(LegalCondTranslation."Legal Conditions");
 
       EXIT("Legal Conditions");
+    END;
+
+    PROCEDURE CheckLocalizationBasedOnTables@5();
+    VAR
+      DetectLocalization@1001 : Codeunit 70005;
+    BEGIN
+      DetectLocalization.CheckLocalizationBasedOnTables(Rec);
+    END;
+
+    PROCEDURE ValidateCurrentLocalization@4() : Boolean;
+    VAR
+      DetectLocalization@1001 : Codeunit 70005;
+    BEGIN
+      EXIT(DetectLocalization.ValidateCurrentLocalization(Rec));
     END;
 
     BEGIN

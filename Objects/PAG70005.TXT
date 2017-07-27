@@ -2,9 +2,10 @@ OBJECT Page 70005 ForNAV Setup Wizard
 {
   OBJECT-PROPERTIES
   {
-    Date=07-07-17;
-    Time=14:06:58;
-    Version List=FORNAVCTP3;
+    Date=20-07-17;
+    Time=20:05:29;
+    Modified=Yes;
+    Version List=FORNAVCTP5;
   }
   PROPERTIES
   {
@@ -19,8 +20,13 @@ OBJECT Page 70005 ForNAV Setup Wizard
                  INIT;
                  IF ForNAVSetup.GET THEN BEGIN
                    TRANSFERFIELDS(ForNAVSetup);
+                   WrongLocalization := NOT ValidateCurrentLocalization;
                  END ELSE BEGIN
+                   CheckLocalizationBasedOnTables;
+                   "Legal Conditions" := LegalConditionsTxt;
+                   "Payment Note" := PaymentNoteTxt;
                    "VAT Amount Specification" := "VAT Amount Specification"::"Multiple Lines";
+                   VALIDATE(Localization);
                  END;
                  INSERT;
 
@@ -127,19 +133,39 @@ OBJECT Page 70005 ForNAV Setup Wizard
                 GroupType=Group;
                 InstructionalTextML=ENU=To enable the ForNAV report package choose Finish. }
 
-    { 21  ;1   ;Group     ;
+    { 24  ;1   ;Group     ;
                 Visible=Step1Visible;
+                GroupType=Group;
+                InstructionalTextML=ENU=Select your localization... }
+
+    { 25  ;2   ;Field     ;
+                SourceExpr=Localization;
+                OnValidate=BEGIN
+                             WrongLocalization := NOT ValidateCurrentLocalization;
+                           END;
+                            }
+
+    { 27  ;2   ;Group     ;
+                Visible=WrongLocalization;
+                GroupType=Group;
+                InstructionalTextML=ENU=WARNING! This is not the localization we detected! }
+
+    { 21  ;1   ;Group     ;
+                Visible=Step2Visible;
                 GroupType=Group;
                 InstructionalTextML=ENU=Select your VAT printing preferences and legal clause. }
 
     { 22  ;2   ;Field     ;
                 SourceExpr="VAT Amount Specification" }
 
+    { 14  ;2   ;Field     ;
+                SourceExpr="Payment Note" }
+
     { 23  ;2   ;Field     ;
                 SourceExpr="Legal Conditions" }
 
     { 17  ;1   ;Group     ;
-                Visible=Step2Visible;
+                Visible=Step3Visible;
                 GroupType=Group;
                 InstructionalTextML=ENU=Do you want replace the current report selections with the ForNAV reports? }
 
@@ -178,9 +204,13 @@ OBJECT Page 70005 ForNAV Setup Wizard
       NextActionEnabled@1009 : Boolean;
       Step1Visible@1011 : Boolean;
       Step2Visible@1010 : Boolean;
+      Step3Visible@1013 : Boolean;
       ReplaceReports@1012 : Boolean;
-      Step@1006 : 'Start,Step1,Step2,Finish';
+      WrongLocalization@1014 : Boolean INDATASET;
+      Step@1006 : 'Start,Step1,Step2,Step3,Finish';
       WatermarkTxt@1000000000 : TextConst 'ENU=Click to import a watermark';
+      PaymentNoteTxt@1015 : TextConst 'ENU=- You can print a payment note here -';
+      LegalConditionsTxt@1016 : TextConst 'ENU=- You can print your legal conditions here -';
 
     LOCAL PROCEDURE LoadTopBanners@40();
     BEGIN
@@ -201,6 +231,8 @@ OBJECT Page 70005 ForNAV Setup Wizard
           ShowStep1;
         Step::Step2:
           ShowStep2;
+        Step::Step3:
+          ShowStep3;
         Step::Finish:
           ShowFinishStep;
       END;
@@ -223,6 +255,11 @@ OBJECT Page 70005 ForNAV Setup Wizard
       Step2Visible := TRUE;
     END;
 
+    LOCAL PROCEDURE ShowStep3@4();
+    BEGIN
+      Step3Visible := TRUE;
+    END;
+
     LOCAL PROCEDURE ShowFinishStep@35();
     BEGIN
       FinalStepVisible := TRUE;
@@ -238,6 +275,7 @@ OBJECT Page 70005 ForNAV Setup Wizard
       FirstStepVisible := FALSE;
       Step1Visible := FALSE;
       Step2Visible := FALSE;
+      Step3Visible := FALSE;
       FinalStepVisible := FALSE;
     END;
 

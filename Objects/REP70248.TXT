@@ -1,0 +1,511 @@
+OBJECT Report 70248 ForNAV Cust./Item Statistics
+{
+  OBJECT-PROPERTIES
+  {
+    Date=21-07-17;
+    Time=12:28:01;
+    Modified=Yes;
+    Version List=WIP CTP4,FORNAV2.0.0.1259/1259;
+  }
+  PROPERTIES
+  {
+    CaptionML=ENU=Customer/Item Statistics;
+    OnInitReport=BEGIN
+                   ;ReportForNav:= ReportForNav.Report(CurrReport.OBJECTID,CurrReport.LANGUAGE,SERIALNUMBER,USERID,COMPANYNAME);ReportForNav.Init;
+                 END;
+
+    OnPreReport=BEGIN
+                  CompanyInformation.GET;
+                  FilterString := Customer.GETFILTERS;
+                  FilterString2 := "Value Entry".GETFILTERS;
+                  IF PrintToExcel THEN
+                    MakeExcelInfo;
+                  ;ReportForNav.OpenDesigner:=ReportForNavOpenDesigner;IF NOT ReportForNav.Pre THEN CurrReport.QUIT;
+                END;
+
+    OnPostReport=BEGIN
+                   IF PrintToExcel THEN
+                     CreateExcelbook;
+                   ;ReportForNav.Post;
+                 END;
+
+  }
+  DATASET
+  {
+    { 6836;    ;DataItem;                    ;
+               DataItemTable=Table18;
+               PrintOnlyIfDetail=Yes;
+               OnPreDataItem=BEGIN
+                               ReportForNav.GetDataItem('Customer').NewPagePerRecord := OnlyOnePerPage;
+                             END;
+
+               ReqFilterFields=No.,Search Name,Customer Posting Group }
+
+    { 1020000;1;Column  ;PrintToExcel        ;
+               IncludeCaption=No;
+               SourceExpr=PrintToExcel }
+
+    { 1020004;1;Column  ;OnlyOnePerPage      ;
+               IncludeCaption=No;
+               SourceExpr=OnlyOnePerPage }
+
+    { 1   ;1   ;Column  ;Profit              ;
+               IncludeCaption=No;
+               SourceExpr=Profit }
+
+    { 8894;1   ;DataItem;                    ;
+               DataItemTable=Table5802;
+               DataItemTableView=SORTING(Source Type,Source No.,Item Ledger Entry Type,Item No.,Posting Date)
+                                 WHERE(Source Type=CONST(Customer),
+                                       Item Ledger Entry Type=CONST(Sale),
+                                       Expected Cost=CONST(No));
+               OnPreDataItem=BEGIN
+                               CLEAR(ValueEntryTotalForItem);
+                               ProfitTotalForItem := 0;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  IF ValueEntryTotalForItem."Item No." <> "Item No." THEN BEGIN
+                                    "CalculateProfit%";
+                                    IF PrintToExcel AND (ValueEntryTotalForItem."Item No." <> '') THEN
+                                      MakeExcelDataBody;
+                                    CLEAR(ValueEntryTotalForItem);
+                                    ProfitTotalForItem := 0;
+                                    IF NOT Item.GET("Item No.") THEN BEGIN
+                                      Item.Description := Text000;
+                                      Item."Base Unit of Measure" := '';
+                                    END;
+                                  END;
+                                  Profit := "Sales Amount (Actual)" + "Cost Amount (Actual)";
+                                  "Discount Amount" := -"Discount Amount";
+                                  ValueEntryTotalForItem."Item No." := "Item No.";
+                                  ValueEntryTotalForItem."Invoiced Quantity" += "Invoiced Quantity";
+                                  ValueEntryTotalForItem."Sales Amount (Actual)" += "Sales Amount (Actual)";
+                                  ValueEntryTotalForItem."Discount Amount" += "Discount Amount";
+                                  ProfitTotalForItem += Profit;
+                                END;
+
+               OnPostDataItem=BEGIN
+                                IF PrintToExcel AND (ValueEntryTotalForItem."Item No." <> '') THEN BEGIN
+                                  "CalculateProfit%";
+                                  MakeExcelDataBody;
+                                END;
+                              END;
+
+               ReqFilterFields=Item No.,Inventory Posting Group,Posting Date;
+               DataItemLink=Source No.=FIELD(No.),
+                            Global Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                            Global Dimension 2 Code=FIELD(Global Dimension 2 Filter) }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+      SaveValues=Yes;
+    }
+    CONTROLS
+    {
+      { 1900000001;0;Container;
+                  ContainerType=ContentArea }
+
+      { 1900000002;1;Group  ;
+                  CaptionML=ENU=Options }
+
+      { 2   ;2   ;Field     ;
+                  CaptionML=ENU=New Page per Account;
+                  ToolTipML=ENU=Specifies if you want to print each account on a separate page. Each account will begin at the top of the following page. Otherwise, each account will follow the previous account on the current page.;
+                  ApplicationArea=#Basic,#Suite;
+                  SourceExpr=OnlyOnePerPage }
+
+      { 1480000;2;Field     ;
+                  CaptionML=ENU=Print To Excel;
+                  ToolTipML=ENU=Specifies if you want to export the data to an Excel spreadsheet for additional analysis or formatting before printing.;
+                  ApplicationArea=#Basic,#Suite;
+                  SourceExpr=PrintToExcel }
+
+      { 5000;2   ;Field     ;
+                  Name=ForNavOpenDesigner;
+                  CaptionML=ENU=Open Designer;
+                  SourceExpr=ReportForNavOpenDesigner;
+                  Visible=ReportForNavAllowDesign }
+
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      ExcelBuf@1480000 : TEMPORARY Record 370;
+      FilterString@1000 : Text;
+      FilterString2@1001 : Text;
+      Profit@1003 : Decimal;
+      "Profit%"@1004 : Decimal;
+      OnlyOnePerPage@1005 : Boolean;
+      Item@1006 : Record 27;
+      CompanyInformation@1007 : Record 79;
+      PrintToExcel@1480001 : Boolean;
+      Text000@1480002 : TextConst 'ENU=Invalid Item';
+      Text001@1480013 : TextConst 'ENU=Data';
+      Text002@1480012 : TextConst 'ENU=Customer/Item Statistics';
+      Text003@1480011 : TextConst 'ENU=Company Name';
+      Text004@1480010 : TextConst 'ENU=Report No.';
+      Text005@1480009 : TextConst 'ENU=Report Name';
+      Text006@1480008 : TextConst 'ENU=User ID';
+      Text007@1480007 : TextConst 'ENU=Date / Time';
+      Text008@1480006 : TextConst 'ENU=Customer Filters';
+      Text009@1480005 : TextConst 'ENU=Value Entry Filters';
+      Text010@1480004 : TextConst 'ENU=Contribution Margin';
+      Text011@1480003 : TextConst 'ENU=Contribution Ratio';
+      ValueEntryTotalForItem@1020001 : Record 5802;
+      ProfitTotalForItem@1020002 : Decimal;
+      ReportForNav@5000 : DotNet "'ForNav.Reports.2.0.0.1259, Version=2.0.0.1259, Culture=neutral, PublicKeyToken=5284c1af2984feb0'.ForNav.Report" WITHEVENTS;
+      ReportForNavClient@5003 : DotNet "'ForNav.Reports.2.0.0.1259, Version=2.0.0.1259, Culture=neutral, PublicKeyToken=5284c1af2984feb0'.ForNav.Report" RUNONCLIENT;
+      ReportForNavDialog@5001 : Dialog;
+      ReportForNavOpenDesigner@5002 : Boolean;
+      ReportForNavAllowDesign@5004 : Boolean INDATASET;
+
+    PROCEDURE "CalculateProfit%"@1();
+    BEGIN
+      IF ValueEntryTotalForItem."Sales Amount (Actual)" <> 0 THEN
+        "Profit%" := ROUND(100 * ProfitTotalForItem / ValueEntryTotalForItem."Sales Amount (Actual)",0.1)
+      ELSE
+        "Profit%" := 0;
+    END;
+
+    LOCAL PROCEDURE MakeExcelInfo@5();
+    BEGIN
+      ExcelBuf.SetUseInfoSheet;
+      ExcelBuf.AddInfoColumn(FORMAT(Text003),FALSE,TRUE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddInfoColumn(CompanyInformation.Name,FALSE,FALSE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.NewRow;
+      ExcelBuf.AddInfoColumn(FORMAT(Text005),FALSE,TRUE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddInfoColumn(FORMAT(Text002),FALSE,FALSE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.NewRow;
+      ExcelBuf.AddInfoColumn(FORMAT(Text004),FALSE,TRUE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddInfoColumn(REPORT::"ForNAV Cust./Item Statistics",FALSE,FALSE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Number);
+      ExcelBuf.NewRow;
+      ExcelBuf.AddInfoColumn(FORMAT(Text006),FALSE,TRUE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddInfoColumn(USERID,FALSE,FALSE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.NewRow;
+      ExcelBuf.AddInfoColumn(FORMAT(Text007),FALSE,TRUE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddInfoColumn(TODAY,FALSE,FALSE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Date);
+      ExcelBuf.AddInfoColumn(TIME,FALSE,FALSE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Time);
+      ExcelBuf.NewRow;
+      ExcelBuf.AddInfoColumn(FORMAT(Text008),FALSE,TRUE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddInfoColumn(FilterString,FALSE,FALSE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.NewRow;
+      ExcelBuf.AddInfoColumn(FORMAT(Text009),FALSE,TRUE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddInfoColumn(FilterString2,FALSE,FALSE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.ClearNewRow;
+      MakeExcelDataHeader;
+    END;
+
+    LOCAL PROCEDURE MakeExcelDataHeader@3();
+    BEGIN
+      ExcelBuf.NewRow;
+      ExcelBuf.AddColumn(Customer.FIELDCAPTION("No."),FALSE,'',TRUE,FALSE,TRUE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddColumn(Customer.FIELDCAPTION(Name),FALSE,'',TRUE,FALSE,TRUE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddColumn("Value Entry".FIELDCAPTION("Item No."),FALSE,'',TRUE,FALSE,TRUE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddColumn(Item.FIELDCAPTION(Description),FALSE,'',TRUE,FALSE,TRUE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddColumn("Value Entry".FIELDCAPTION("Invoiced Quantity"),FALSE,'',TRUE,FALSE,TRUE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddColumn(Item.FIELDCAPTION("Base Unit of Measure"),FALSE,'',TRUE,FALSE,TRUE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddColumn("Value Entry".FIELDCAPTION("Sales Amount (Actual)"),FALSE,'',TRUE,FALSE,TRUE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddColumn(FORMAT(Text010),FALSE,'',TRUE,FALSE,TRUE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddColumn(FORMAT(Text011),FALSE,'',TRUE,FALSE,TRUE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddColumn("Value Entry".FIELDCAPTION("Discount Amount"),FALSE,'',TRUE,FALSE,TRUE,'',ExcelBuf."Cell Type"::Text);
+    END;
+
+    LOCAL PROCEDURE MakeExcelDataBody@4();
+    BEGIN
+      ExcelBuf.NewRow;
+      ExcelBuf.AddColumn(Customer."No.",FALSE,'',FALSE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddColumn(Customer.Name,FALSE,'',FALSE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddColumn(ValueEntryTotalForItem."Item No.",FALSE,'',FALSE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddColumn(Item.Description,FALSE,'',FALSE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddColumn(-ValueEntryTotalForItem."Invoiced Quantity",FALSE,'',FALSE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Number);
+      ExcelBuf.AddColumn(Item."Base Unit of Measure",FALSE,'',FALSE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
+      ExcelBuf.AddColumn(
+        ValueEntryTotalForItem."Sales Amount (Actual)",FALSE,'',FALSE,FALSE,FALSE,'#,##0.00',ExcelBuf."Cell Type"::Number);
+      ExcelBuf.AddColumn(ProfitTotalForItem,FALSE,'',FALSE,FALSE,FALSE,'#,##0.00',ExcelBuf."Cell Type"::Number);
+      ExcelBuf.AddColumn("Profit%" / 100,FALSE,'',FALSE,FALSE,FALSE,'0.0%',ExcelBuf."Cell Type"::Number);
+      ExcelBuf.AddColumn(ValueEntryTotalForItem."Discount Amount",FALSE,'',FALSE,FALSE,FALSE,'#,##0.00',ExcelBuf."Cell Type"::Number);
+    END;
+
+    LOCAL PROCEDURE CreateExcelbook@2();
+    BEGIN
+      ExcelBuf.CreateBookAndOpenExcel('',Text001,Text002,COMPANYNAME,USERID);
+      ERROR('');
+    END;
+
+    EVENT ReportForNav@5000::OnInit@5002();
+    VAR
+      ReportLayoutSelection@1000 : Record 9651;
+      CustomReportLayout@1001 : Record 9650;
+      CustomLayoutID@1002 : Variant;
+      InStream@1004 : InStream;
+      EmptyLayout@1003 : Text;
+    BEGIN
+      EmptyLayout := FORMAT(ReportLayoutSelection."Custom Report Layout Code");
+      CustomLayoutID := ReportLayoutSelection."Custom Report Layout Code";
+      ReportForNav.OData := GETURL(CLIENTTYPE::OData, COMPANYNAME, OBJECTTYPE::Page, 7702);
+      IF FORMAT(ReportLayoutSelection.GetTempLayoutSelected) <> EmptyLayout THEN
+        CustomLayoutID := ReportLayoutSelection.GetTempLayoutSelected
+      ELSE
+        IF ReportLayoutSelection.HasCustomLayout(ReportForNav.ReportID) = 1 THEN
+          CustomLayoutID := ReportLayoutSelection."Custom Report Layout Code";
+
+      IF (FORMAT(CustomLayoutID) <> EmptyLayout) AND CustomReportLayout.GET(CustomLayoutID) THEN BEGIN
+        CustomReportLayout.TESTFIELD(Type,CustomReportLayout.Type::RDLC);
+        CustomReportLayout.CALCFIELDS(Layout);
+        CustomReportLayout.Layout.CREATEINSTREAM(InStream,TEXTENCODING::UTF8);
+        ReportForNav.IsCustomLayout := TRUE;
+      END ELSE
+        REPORT.RDLCLAYOUT(ReportForNav.ReportID,InStream);
+
+      ReportForNav.LoadRdlc(InStream);
+      IF COPYSTR(LOWERCASE(GETURL(CLIENTTYPE::Current, COMPANYNAME, OBJECTTYPE::Codeunit, 1)), 1, 14) = 'dynamicsnav://' THEN BEGIN
+        ReportForNav.CheckClientAddIn();
+        ReportForNavClient := ReportForNavClient.Report(ReportForNav.Definition);
+        ReportForNavAllowDesign := ReportForNavClient.HasDesigner AND NOT ReportForNav.ParameterMode;
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnSave@5010(Base64Layout@1000 : Text);
+    VAR
+      CustomReportLayout@1002 : Record 9650;
+      ReportLayoutSelection@1003 : Record 9651;
+      LayoutId@1004 : Variant;
+      TempBlob@1007 : Record 99008535;
+      OutStream@1006 : OutStream;
+      Bstr@1005 : BigText;
+      EmptyLayout@1001 : Text;
+    BEGIN
+      EmptyLayout := FORMAT(ReportLayoutSelection."Custom Report Layout Code");
+      LayoutId := ReportLayoutSelection."Custom Report Layout Code";
+      IF ReportLayoutSelection.HasCustomLayout(ReportForNav.ReportID) = 1 THEN BEGIN
+        IF FORMAT(ReportLayoutSelection.GetTempLayoutSelected) <> EmptyLayout THEN BEGIN
+          LayoutId := ReportLayoutSelection.GetTempLayoutSelected;
+        END ELSE BEGIN
+          IF ReportLayoutSelection.GET(ReportForNav.ReportID, COMPANYNAME) THEN BEGIN
+          LayoutId := ReportLayoutSelection."Custom Report Layout Code";
+          END;
+        END;
+      END ELSE BEGIN
+        IF CONFIRM('Default custom layout not found. Create one?') THEN;
+      END;
+      IF FORMAT(LayoutId) <> EmptyLayout THEN BEGIN
+        TempBlob.Blob.CREATEOUTSTREAM(OutStream);
+        Bstr.ADDTEXT(Base64Layout);
+        Bstr.WRITE(OutStream);
+        CustomReportLayout.GET(LayoutId);
+        CustomReportLayout.ImportLayoutBlob(TempBlob, 'RDL');
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnParameters@5008(Parameters@1000 : Text);
+    BEGIN
+      ReportForNav.Parameters := REPORT.RUNREQUESTPAGE(ReportForNav.ReportID, Parameters);
+    END;
+
+    EVENT ReportForNav@5000::OnPreview@5009(Parameters@1000 : Text;FileName@1005 : Text);
+    VAR
+      PdfFile@1002 : File;
+      InStream@1003 : InStream;
+      OutStream@1004 : OutStream;
+    BEGIN
+      COMMIT;
+      PdfFile.CREATETEMPFILE;
+      PdfFile.CREATEOUTSTREAM(OutStream);
+      REPORT.SAVEAS(ReportForNav.ReportID, Parameters, REPORTFORMAT::Pdf, OutStream);
+      PdfFile.CREATEINSTREAM(InStream);
+      ReportForNavClient.ShowDesigner;
+      IF ReportForNav.IsValidPdf(PdfFile.NAME) THEN DOWNLOADFROMSTREAM(InStream, '', '', '', FileName);
+      PdfFile.CLOSE;
+    END;
+
+    EVENT ReportForNav@5000::OnPreSection@5012(DataItemId@1000 : Text;SectionId@1001 : Text);
+    BEGIN
+    END;
+
+    EVENT ReportForNav@5000::OnPostSection@50013(DataItemId@1000 : Text;SectionId@1001 : Text);
+    BEGIN
+    END;
+
+    EVENT ReportForNav@5000::OnClientOperation@5008(Args@1000 : DotNet "'mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Array");
+    VAR
+      op@1001 : Text;
+      FileMgmt@1002 : Codeunit 419;
+      Process@1006 : DotNet "'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Diagnostics.Process" RUNONCLIENT;
+      PathObj@1005 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Path" RUNONCLIENT;
+      FileVersionInfo@1003 : DotNet "'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Diagnostics.FileVersionInfo" RUNONCLIENT;
+      DirectoryHelper@1004 : DotNet "'mscorlib'.System.IO.Directory" RUNONCLIENT;
+    BEGIN
+      op := Args.GetValue(0);
+      CASE op OF
+        'TempPath': ReportForNav.Result := PathObj.GetTempPath();
+        'FileExists': ReportForNav.Result := FileMgmt.ClientFileExists(Args.GetValue(1));
+        'DirectoryExists': ReportForNav.Result := FileMgmt.ClientDirectoryExists(Args.GetValue(1));
+        'ProcessLocation': ReportForNav.Result := Process.GetCurrentProcess().MainModule.FileName;
+        'FileVersion': ReportForNav.Result := FileVersionInfo.GetVersionInfo(Args.GetValue(1)).FileVersion;
+        'DeleteFile': FileMgmt.DeleteClientFile(Args.GetValue(1));
+        'DeleteDirectory': IF STRLEN(Args.GetValue(1)) > 20 THEN
+          IF FileMgmt.ClientDirectoryExists(Args.GetValue(1)) THEN
+            DirectoryHelper.Delete(FORMAT(Args.GetValue(1)), TRUE);
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnCheckForNavClientVersion@5007();
+    BEGIN
+      ReportForNavClient := ReportForNavClient.Report();
+      IF ReportForNav.MyFileVersion <> ReportForNavClient.MyFileVersion THEN
+        ERROR('You have version %1 of the Reports ForNAV assembly here:\\%2\\Please close your NAV client and update it to version %3.',
+              ReportForNavClient.MyFileVersion, ReportForNavClient.MyFileName, ReportForNav.MyFileVersion);
+    END;
+
+    EVENT ReportForNav@5000::OnSelectPrinter@5006();
+    BEGIN
+      ReportForNav.PrinterSettings.PageSettings := ReportForNavClient.SelectPrinter(ReportForNav.PrinterSettings.PrinterName,ReportForNav.PrinterSettings.ShowPrinterDialog,ReportForNav.PrinterSettings.PageSettings);
+    END;
+
+    EVENT ReportForNav@5000::OnPrint@5005(InStream@1000 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Stream");
+    VAR
+      ClientFileName@1001 : Text[255];
+    BEGIN
+      DOWNLOADFROMSTREAM(InStream, '', '<TEMP>', '', ClientFileName);
+      ReportForNavClient.Print(ClientFileName);
+    END;
+
+    EVENT ReportForNav@5000::OnDesign@5007(Data@1001 : Text);
+    BEGIN
+      ReportForNavClient.Data := Data;
+      WHILE ReportForNavClient.DesignReport DO BEGIN
+        ReportForNav.HandleRequest(ReportForNavClient.GetRequest());
+        SLEEP(100);
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnView@5008(ClientFileName@1000 : Text;Parameters@1001 : Text;ServerFileName@1002 : Text);
+    VAR
+      ServerFile@1003 : File;
+      ServerInStream@1004 : InStream;
+    BEGIN
+      ServerFile.OPEN(ServerFileName);
+      ServerFile.CREATEINSTREAM(ServerInStream);
+      DOWNLOADFROMSTREAM(ServerInStream,'','','',ClientFileName);
+    END;
+
+    EVENT ReportForNav@5000::OnMessage@5009(Operation@1000 : Text;Parameter@1001 : Text;ParameterNo@1002 : Integer);
+    BEGIN
+      CASE Operation OF
+        'Open'    : ReportForNavDialog.OPEN(Parameter);
+        'Update'  : ReportForNavDialog.UPDATE(ParameterNo,Parameter);
+        'Close'   : ReportForNavDialog.CLOSE();
+        'Message' : MESSAGE(Parameter);
+        'Error'   : ERROR(Parameter);
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnPrintPreview@5011(InStream@1000 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Stream";Preview@1001 : Boolean);
+    VAR
+      ClientFileName@1002 : Text[255];
+    BEGIN
+      CurrReport.LANGUAGE := SYSTEM.GLOBALLANGUAGE;
+      DOWNLOADFROMSTREAM(InStream, '', '<TEMP>', '', ClientFileName);
+      WHILE ReportForNavClient.PrintPreviewDialog(ClientFileName,ReportForNav.PrinterSettings.PrinterName,Preview) DO BEGIN
+        ReportForNav.HandlePrintPreviewRequest(ReportForNavClient.GetPrintPreviewRequest());
+        SLEEP(100);
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnTotals@5004(DataItemId@1000 : Text;Operation@1001 : Text;GroupTotalFieldNo@1002 : Integer);
+    VAR
+      CurrRecRef@1003 : RecordRef;
+      NextRecRef@1004 : RecordRef;
+      CurrKeyRef@1005 : KeyRef;
+      NextKeyRef@1006 : KeyRef;
+      FieldIndex@1007 : Integer;
+      GroupFieldIndex@1008 : Integer;
+    BEGIN
+      // Do not change (Autogenerated by Reports ForNAV) - Instead change the Create Totals, Total Fields or Group Total Fields properties on the Data item in the ForNAV designer
+      CASE DataItemId OF
+        'Customer': WITH Customer DO CASE Operation OF
+           'Add': BEGIN
+                ReportForNav.AddTotal(DataItemId,0,"Value Entry"."Sales Amount (Actual)");
+                ReportForNav.AddTotal(DataItemId,1,Profit);
+                ReportForNav.AddTotal(DataItemId,2,"Value Entry"."Discount Amount");
+              END;
+           'Restore': BEGIN
+                 "Value Entry"."Sales Amount (Actual)" := ReportForNav.RestoreTotal(DataItemId,0,GroupTotalFieldNo);
+                 Profit := ReportForNav.RestoreTotal(DataItemId,1,GroupTotalFieldNo);
+                 "Value Entry"."Discount Amount" := ReportForNav.RestoreTotal(DataItemId,2,GroupTotalFieldNo);
+              END;
+        END;  'ValueEntry': WITH "Value Entry" DO CASE Operation OF
+           'Add': BEGIN
+                ReportForNav.AddTotal(DataItemId,0,"Invoiced Quantity");
+                ReportForNav.AddTotal(DataItemId,1,"Sales Amount (Actual)");
+                ReportForNav.AddTotal(DataItemId,2,"Discount Amount");
+                ReportForNav.AddTotal(DataItemId,3,"Invoiced Quantity");
+                ReportForNav.AddTotal(DataItemId,4,"Sales Amount (Actual)");
+                ReportForNav.AddTotal(DataItemId,5,Profit);
+                ReportForNav.AddTotal(DataItemId,6,"Discount Amount");
+              END;
+           'Restore': BEGIN
+                 "Invoiced Quantity" := ReportForNav.RestoreTotal(DataItemId,0,GroupTotalFieldNo);
+                 "Sales Amount (Actual)" := ReportForNav.RestoreTotal(DataItemId,1,GroupTotalFieldNo);
+                 "Discount Amount" := ReportForNav.RestoreTotal(DataItemId,2,GroupTotalFieldNo);
+                 "Invoiced Quantity" := ReportForNav.RestoreTotal(DataItemId,3,GroupTotalFieldNo);
+                 "Sales Amount (Actual)" := ReportForNav.RestoreTotal(DataItemId,4,GroupTotalFieldNo);
+                 Profit := ReportForNav.RestoreTotal(DataItemId,5,GroupTotalFieldNo);
+                 "Discount Amount" := ReportForNav.RestoreTotal(DataItemId,6,GroupTotalFieldNo);
+              END;
+        END;
+      END;
+    END;
+
+    BEGIN
+    {
+      Copyright (c) 2017 ForNAV ApS - All Rights Reserved
+      The intellectual work and technical concepts contained in this file are proprietary to ForNAV.
+      Unauthorized reverse engineering, distribution or copying of this file, parts hereof, or derived work, via any medium is strictly prohibited without written permission from ForNAV ApS.
+      This source code is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    }
+    END.
+  }
+  RDLDATA
+  {
+    <?xml version="1.0" encoding="utf-8"?>
+<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
+  <Description>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</Description>
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="DataSource">
+      <ConnectionProperties>
+        <DataProvider>SQL</DataProvider>
+        <ConnectString />
+      </ConnectionProperties>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>63666e3c-7b1c-4887-b385-46ef59500230</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <Height>2in</Height>
+        <Style />
+      </Body>
+      <Width>6.5in</Width>
+      <Page>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <rd:ReportUnitType>Invalid</rd:ReportUnitType>
+  <rd:ReportID>4f56e1b4-400d-4895-ab24-ee624917a0e3</rd:ReportID>
+</Report>
+    END_OF_RDLDATA
+  }
+}
+

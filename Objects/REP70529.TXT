@@ -2,9 +2,10 @@ OBJECT Report 70529 ForNAV Sales Template
 {
   OBJECT-PROPERTIES
   {
-    Date=07-07-17;
-    Time=13:31:15;
-    Version List=CTP3,FORNAV2.0.0.1255/1255;
+    Date=21-07-17;
+    Time=12:28:01;
+    Modified=Yes;
+    Version List=CTP4,FORNAV2.0.0.1259/1259;
   }
   PROPERTIES
   {
@@ -114,8 +115,8 @@ OBJECT Report 70529 ForNAV Sales Template
     VAR
       ForNAVCheckDocumentDiscount@1000000000 : Codeunit 70000;
       NoOfCopies@1000 : Integer;
-      ReportForNav@5000 : DotNet "'ForNav.Reports.2.0.0.1255, Version=2.0.0.1255, Culture=neutral, PublicKeyToken=5284c1af2984feb0'.ForNav.Report" WITHEVENTS;
-      ReportForNavClient@5003 : DotNet "'ForNav.Reports.2.0.0.1255, Version=2.0.0.1255, Culture=neutral, PublicKeyToken=5284c1af2984feb0'.ForNav.Report" RUNONCLIENT;
+      ReportForNav@5000 : DotNet "'ForNav.Reports.2.0.0.1259, Version=2.0.0.1259, Culture=neutral, PublicKeyToken=5284c1af2984feb0'.ForNav.Report" WITHEVENTS;
+      ReportForNavClient@5003 : DotNet "'ForNav.Reports.2.0.0.1259, Version=2.0.0.1259, Culture=neutral, PublicKeyToken=5284c1af2984feb0'.ForNav.Report" RUNONCLIENT;
       ReportForNavDialog@5001 : Dialog;
       ReportForNavOpenDesigner@5002 : Boolean;
       ReportForNavAllowDesign@5004 : Boolean INDATASET;
@@ -246,11 +247,11 @@ OBJECT Report 70529 ForNAV Sales Template
       PdfFile.CLOSE;
     END;
 
-    EVENT ReportForNav@5000::OnPreSection@5012(DataItemId@1000000000 : Text;SectionId@1000000001 : Text);
+    EVENT ReportForNav@5000::OnPreSection@5012(DataItemId@1000 : Text;SectionId@1001 : Text);
     BEGIN
     END;
 
-    EVENT ReportForNav@5000::OnPostSection@50013(DataItemId@1000000000 : Text;SectionId@1000000001 : Text);
+    EVENT ReportForNav@5000::OnPostSection@50013(DataItemId@1000 : Text;SectionId@1001 : Text);
     BEGIN
     END;
 
@@ -290,9 +291,9 @@ OBJECT Report 70529 ForNAV Sales Template
       ReportForNav.PrinterSettings.PageSettings := ReportForNavClient.SelectPrinter(ReportForNav.PrinterSettings.PrinterName,ReportForNav.PrinterSettings.ShowPrinterDialog,ReportForNav.PrinterSettings.PageSettings);
     END;
 
-    EVENT ReportForNav@5000::OnPrint@5005(InStream@1000000000 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Stream");
+    EVENT ReportForNav@5000::OnPrint@5005(InStream@1000 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Stream");
     VAR
-      ClientFileName@1000000001 : Text[255];
+      ClientFileName@1001 : Text[255];
     BEGIN
       DOWNLOADFROMSTREAM(InStream, '', '<TEMP>', '', ClientFileName);
       ReportForNavClient.Print(ClientFileName);
@@ -307,17 +308,17 @@ OBJECT Report 70529 ForNAV Sales Template
       END;
     END;
 
-    EVENT ReportForNav@5000::OnView@5008(ClientFileName@1000000000 : Text;Parameters@1000000001 : Text;ServerFileName@1000000002 : Text);
+    EVENT ReportForNav@5000::OnView@5008(ClientFileName@1000 : Text;Parameters@1001 : Text;ServerFileName@1002 : Text);
     VAR
-      ServerFile@1000000003 : File;
-      ServerInStream@1000000004 : InStream;
+      ServerFile@1003 : File;
+      ServerInStream@1004 : InStream;
     BEGIN
       ServerFile.OPEN(ServerFileName);
       ServerFile.CREATEINSTREAM(ServerInStream);
       DOWNLOADFROMSTREAM(ServerInStream,'','','',ClientFileName);
     END;
 
-    EVENT ReportForNav@5000::OnMessage@5009(Operation@1000000000 : Text;Parameter@1000000001 : Text;ParameterNo@1000000002 : Integer);
+    EVENT ReportForNav@5000::OnMessage@5009(Operation@1000 : Text;Parameter@1001 : Text;ParameterNo@1002 : Integer);
     BEGIN
       CASE Operation OF
         'Open'    : ReportForNavDialog.OPEN(Parameter);
@@ -328,9 +329,9 @@ OBJECT Report 70529 ForNAV Sales Template
       END;
     END;
 
-    EVENT ReportForNav@5000::OnPrintPreview@5011(InStream@1000000000 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Stream";Preview@1000000001 : Boolean);
+    EVENT ReportForNav@5000::OnPrintPreview@5011(InStream@1000 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Stream";Preview@1001 : Boolean);
     VAR
-      ClientFileName@1000000002 : Text[255];
+      ClientFileName@1002 : Text[255];
     BEGIN
       CurrReport.LANGUAGE := SYSTEM.GLOBALLANGUAGE;
       DOWNLOADFROMSTREAM(InStream, '', '<TEMP>', '', ClientFileName);
@@ -340,14 +341,14 @@ OBJECT Report 70529 ForNAV Sales Template
       END;
     END;
 
-    EVENT ReportForNav@5000::OnTotals@5004(DataItemId@1000000000 : Text;Operation@1000000001 : Text;GroupTotalFieldNo@1000000002 : Integer);
+    EVENT ReportForNav@5000::OnTotals@5004(DataItemId@1000 : Text;Operation@1001 : Text;GroupTotalFieldNo@1002 : Integer);
     VAR
-      CurrRecRef@1000000003 : RecordRef;
-      NextRecRef@1000000004 : RecordRef;
-      CurrKeyRef@1000000005 : KeyRef;
-      NextKeyRef@1000000006 : KeyRef;
-      FieldIndex@1000000007 : Integer;
-      GroupFieldIndex@1000000008 : Integer;
+      CurrRecRef@1003 : RecordRef;
+      NextRecRef@1004 : RecordRef;
+      CurrKeyRef@1005 : KeyRef;
+      NextKeyRef@1006 : KeyRef;
+      FieldIndex@1007 : Integer;
+      GroupFieldIndex@1008 : Integer;
     BEGIN
       // Do not change (Autogenerated by Reports ForNAV) - Instead change the Create Totals, Total Fields or Group Total Fields properties on the Data item in the ForNAV designer
       CASE DataItemId OF
@@ -397,7 +398,7 @@ OBJECT Report 70529 ForNAV Sales Template
   {
     <?xml version="1.0" encoding="utf-8"?>
 <Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
-  <Description>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</Description>
+  <Description>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</Description>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
     <DataSource Name="DataSource">
@@ -406,7 +407,7 @@ OBJECT Report 70529 ForNAV Sales Template
         <ConnectString />
       </ConnectionProperties>
       <rd:SecurityType>None</rd:SecurityType>
-      <rd:DataSourceID>92a17665-aa81-4a5f-b391-6bcbd08aef81</rd:DataSourceID>
+      <rd:DataSourceID>2f98a9d0-7376-4be4-9c0b-6e6faf6b79ed</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <ReportSections>
@@ -422,7 +423,7 @@ OBJECT Report 70529 ForNAV Sales Template
     </ReportSection>
   </ReportSections>
   <rd:ReportUnitType>Invalid</rd:ReportUnitType>
-  <rd:ReportID>c7fa1a23-774b-43da-a080-a55f8e6be32d</rd:ReportID>
+  <rd:ReportID>4f0fbbb6-4065-4bf0-98e4-a8457231d513</rd:ReportID>
 </Report>
     END_OF_RDLDATA
   }

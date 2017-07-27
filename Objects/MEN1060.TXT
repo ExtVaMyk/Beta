@@ -2,9 +2,10 @@ OBJECT MenuSuite 1060 Dept - Add-on 10
 {
   OBJECT-PROPERTIES
   {
-    Date=07-07-17;
-    Time=14:42:01;
-    Version List=FORNAVCTP3;
+    Date=20-07-17;
+    Time=20:21:13;
+    Modified=Yes;
+    Version List=FORNAVCTP4;
   }
   PROPERTIES
   {
@@ -113,7 +114,7 @@ OBJECT MenuSuite 1060 Dept - Add-on 10
                                                                 MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
                                                                 ParentNodeID=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
                                                                 Visible=Yes;
-                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                NextNodeID=[{18FE127A-54F8-4D99-9251-F9F5B7D230B6}];
                                                                 FirstChild=[{596FD082-176B-47D1-B4BA-5DABB301A6C3}] }
     { MenuItem       ;[{62E72610-35DE-4B65-A0A8-4A4464FD467C}] ;Name=Sales Order Confirmation;
                                                                 CaptionML=ENU=Sales Order Confirmation;
@@ -216,6 +217,53 @@ OBJECT MenuSuite 1060 Dept - Add-on 10
                                                                 RunObjectType=Report;
                                                                 RunObjectID=70104;
                                                                 ParentNodeID=[{4ECA5D9B-6E0A-46E8-BB54-57C0FEC90523}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuGroup      ;[{18FE127A-54F8-4D99-9251-F9F5B7D230B6}] ;Name=Reports;
+                                                                CaptionML=ENU=Reports;
+                                                                MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                ParentNodeID=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                FirstChild=[{BA687EE2-5570-4962-B8FF-C27DE3ABC6F3}] }
+    { MenuItem       ;[{BA687EE2-5570-4962-B8FF-C27DE3ABC6F3}] ;Name=ForNAV Trial Balance;
+                                                                CaptionML=ENU=ForNAV Trial Balance;
+                                                                ApplicationArea=;
+                                                                MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=70206;
+                                                                ParentNodeID=[{18FE127A-54F8-4D99-9251-F9F5B7D230B6}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{80F41632-02B7-4B65-9469-B637CEA37A37}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{80F41632-02B7-4B65-9469-B637CEA37A37}] ;Name=ForNAV Customer/Item Statistics;
+                                                                CaptionML=ENU=ForNAV Customer/Item Statistics;
+                                                                ApplicationArea=;
+                                                                MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=70248;
+                                                                ParentNodeID=[{18FE127A-54F8-4D99-9251-F9F5B7D230B6}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{8EBA2FA7-A319-4BFA-8379-B9A253503879}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{8EBA2FA7-A319-4BFA-8379-B9A253503879}] ;Name=ForNav Salesperson-Commission;
+                                                                CaptionML=ENU=ForNav Salesperson-Commission;
+                                                                ApplicationArea=;
+                                                                MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=70215;
+                                                                ParentNodeID=[{18FE127A-54F8-4D99-9251-F9F5B7D230B6}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{3E0EA722-316D-4835-B87E-31E12BE27FF9}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{3E0EA722-316D-4835-B87E-31E12BE27FF9}] ;Name=ForNAV Aged Accounts Receivable;
+                                                                CaptionML=ENU=ForNAV Aged Accounts Receivable;
+                                                                ApplicationArea=;
+                                                                MemberOfMenu=[{0691571E-EDD6-473D-A139-81B1E9B887F2}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=70220;
+                                                                ParentNodeID=[{18FE127A-54F8-4D99-9251-F9F5B7D230B6}];
                                                                 Visible=Yes;
                                                                 NextNodeID=[{00000000-0000-0000-0000-000000000000}];
                                                                 DepartmentCategory=Reports and Analysis }

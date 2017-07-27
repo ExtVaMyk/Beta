@@ -1,0 +1,82 @@
+OBJECT Codeunit 70004 ForNAV Get Sales Tax Details
+{
+  OBJECT-PROPERTIES
+  {
+    Date=17-07-17;
+    Time=15:25:13;
+    Modified=Yes;
+    Version List=FORNAVCTP5;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+
+    PROCEDURE GetSalesTax@1000000000(Rec@1000000000 : Variant;VAR ForNAVSalesTaxBuffer@1000000001 : TEMPORARY Record 70998);
+    VAR
+      DocLineBuffer@1000000006 : TEMPORARY Record 70999;
+      RecRefLib@1000000002 : Codeunit 70090;
+      TestValidDociFace@1000000004 : Codeunit 70080;
+      RecRef@1000000003 : RecordRef;
+      LineRec@1000000005 : RecordRef;
+    BEGIN
+      ThrowErrorIfNotTemp(ForNAVSalesTaxBuffer);
+      RecRefLib.ConvertToRecRef(Rec, RecRef);
+      TestValidDociFace.ThrowErrorIfNotValid(RecRef);
+      FindLinesRecRef(DocLineBuffer, RecRef, LineRec);
+      CreateSalesTaxDetails(DocLineBuffer, ForNAVSalesTaxBuffer);
+    END;
+
+    LOCAL PROCEDURE ThrowErrorIfNotTemp@1000000001(VAR ForNAVSalesTaxBuffer@1000000000 : Record 70998);
+    VAR
+      NotTempErr@1000000001 : TextConst 'ENU=When using this function the Vat Amount Line table should be declared as temporary.';
+    BEGIN
+      WITH ForNAVSalesTaxBuffer DO
+        IF NOT ISTEMPORARY THEN
+          ERROR(NotTempErr);
+    END;
+
+    LOCAL PROCEDURE FindLinesRecRef@1000000003(VAR DocLineBuffer@1000000004 : Record 70999;VAR RecRef@1000000000 : RecordRef;VAR LineRec@1000000001 : RecordRef);
+    VAR
+      RecRefLib@1000000002 : Codeunit 70090;
+      FldRef@1000000003 : FieldRef;
+    BEGIN
+      LineRec.OPEN(RecRef.NUMBER + 1);
+
+      RecRefLib.FindAndFilterieldNo(RecRef, LineRec, FldRef, 'No.');
+      RecRefLib.FindAndFilterieldNo(RecRef, LineRec, FldRef, 'Document Type');
+      IF LineRec.FINDSET THEN REPEAT
+        DocLineBuffer.CreateForRecRef(LineRec);
+      UNTIL LineRec.NEXT = 0;
+    END;
+
+    LOCAL PROCEDURE CreateSalesTaxDetails@1000000002(VAR DocLineBuffer@1000000001 : Record 70999;VAR ForNAVSalesTaxBuffer@1000000000 : Record 70998);
+    BEGIN
+      ForNAVSalesTaxBuffer.INIT;
+      ForNAVSalesTaxBuffer.INSERT;
+
+      WITH DocLineBuffer DO
+        IF FINDSET THEN REPEAT
+          IF "VAT %" = 0 THEN
+            ForNAVSalesTaxBuffer."Exempt Amount" := ForNAVSalesTaxBuffer."Exempt Amount" + Amount
+          ELSE
+            ForNAVSalesTaxBuffer."Taxable Amount" := ForNAVSalesTaxBuffer."Taxable Amount" + Amount;
+          ForNAVSalesTaxBuffer.MODIFY;
+        UNTIL NEXT = 0;
+    END;
+
+    BEGIN
+    {
+      Copyright (c) 2017 ForNAV ApS - All Rights Reserved
+      The intellectual work and technical concepts contained in this file are proprietary to ForNAV.
+      Unauthorized reverse engineering, distribution or copying of this file, parts hereof, or derived work, via any medium is strictly prohibited without written permission from ForNAV ApS.
+      This source code is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    }
+    END.
+  }
+}
+

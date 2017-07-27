@@ -2,9 +2,10 @@ OBJECT Codeunit 70029 ForNAV Replace Report Sel.
 {
   OBJECT-PROPERTIES
   {
-    Date=02-06-17;
-    Time=12:00:00;
-    Version List=FORNAVCTP2;
+    Date=20-07-17;
+    Time=20:16:47;
+    Modified=Yes;
+    Version List=FORNAVCTP5;
   }
   PROPERTIES
   {
@@ -36,7 +37,7 @@ OBJECT Codeunit 70029 ForNAV Replace Report Sel.
 
         Usage := Usage::"S.Order";
         Sequence := '1';
-        "Report ID" := FindReportID('Order Confirmation');
+        "Report ID" := FindReportID('Order Confirmation', GetPrefix);
         INSERT;
       END;
     END;
@@ -52,7 +53,7 @@ OBJECT Codeunit 70029 ForNAV Replace Report Sel.
 
         Usage := Usage::"S.Invoice";
         Sequence := '1';
-        "Report ID" := FindReportID('Sales Invoice');
+        "Report ID" := FindReportID('Sales Invoice', GetPrefix);
         INSERT;
       END;
     END;
@@ -68,7 +69,7 @@ OBJECT Codeunit 70029 ForNAV Replace Report Sel.
 
         Usage := Usage::"S.Cr.Memo";
         Sequence := '1';
-        "Report ID" := FindReportID('Credit Memo');
+        "Report ID" := FindReportID('Credit Memo', GetPrefix);
         INSERT;
       END;
     END;
@@ -84,7 +85,7 @@ OBJECT Codeunit 70029 ForNAV Replace Report Sel.
 
         Usage := Usage::"S.Shipment";
         Sequence := '1';
-        "Report ID" := FindReportID('Sales Shipment');
+        "Report ID" := FindReportID('Sales Shipment', '');
         INSERT;
       END;
     END;
@@ -100,7 +101,7 @@ OBJECT Codeunit 70029 ForNAV Replace Report Sel.
 
         Usage := Usage::"S.Quote";
         Sequence := '1';
-        "Report ID" := FindReportID('Sales Quote');
+        "Report ID" := FindReportID('Sales Quote', GetPrefix);
         INSERT;
       END;
     END;
@@ -116,7 +117,7 @@ OBJECT Codeunit 70029 ForNAV Replace Report Sel.
 
         Usage := Usage::"P.Order";
         Sequence := '1';
-        "Report ID" := FindReportID('Purchase Order');
+        "Report ID" := FindReportID('Purchase Order', GetPrefix);
         INSERT;
       END;
     END;
@@ -132,7 +133,7 @@ OBJECT Codeunit 70029 ForNAV Replace Report Sel.
 
         Usage := Usage::"P.Quote";
         Sequence := '1';
-        "Report ID" := FindReportID('Purchase Quote');
+        "Report ID" := FindReportID('Purchase Quote', GetPrefix);
         INSERT;
       END;
     END;
@@ -148,7 +149,7 @@ OBJECT Codeunit 70029 ForNAV Replace Report Sel.
 
         Usage := Usage::"P.Invoice";
         Sequence := '1';
-        "Report ID" := FindReportID('Purchase Invoice');
+        "Report ID" := FindReportID('Purchase Invoice', GetPrefix);
         INSERT;
       END;
     END;
@@ -164,7 +165,7 @@ OBJECT Codeunit 70029 ForNAV Replace Report Sel.
 
         Usage := Usage::"P.Cr.Memo";
         Sequence := '1';
-        "Report ID" := FindReportID('Purchase Credit Memo');
+        "Report ID" := FindReportID('Purchase Cr. Memo', GetPrefix);
         INSERT;
       END;
     END;
@@ -180,21 +181,32 @@ OBJECT Codeunit 70029 ForNAV Replace Report Sel.
 
         Usage := Usage::Reminder;
         Sequence := '1';
-        "Report ID" := FindReportID('Reminder');
+        "Report ID" := FindReportID('Reminder', GetPrefix);
         INSERT;
       END;
     END;
 
-    LOCAL PROCEDURE FindReportID@1000000004(ReportName@1000000001 : Text) : Integer;
+    LOCAL PROCEDURE FindReportID@1000000004(ReportName@1000000001 : Text;Prefix@1000 : Text) : Integer;
     VAR
-      Obj@1000000000 : Record 2000000001;
+      AllObjWithCaption@1000000000 : Record 2000000058;
     BEGIN
-      WITH Obj DO BEGIN
-        SETRANGE(Type, Obj.Type::Report);
-        SETRANGE(Name, 'ForNAV ' + ReportName);
+      WITH AllObjWithCaption DO BEGIN
+        SETRANGE("Object Type", "Object Type"::Report);
+        SETRANGE("Object Name", 'ForNAV ' + Prefix +ReportName);
         FINDFIRST;
-        EXIT(ID);
+        EXIT("Object ID");
       END;
+    END;
+
+    LOCAL PROCEDURE GetPrefix@1() : Text;
+    VAR
+      ForNAVSetup@1000 : Record 70000;
+    BEGIN
+      ForNAVSetup.GET;
+      IF ForNAVSetup."VAT Amount Specification" = ForNAVSetup."VAT Amount Specification"::"N/A. (Sales Tax)" THEN
+        EXIT('Tax ');
+
+      EXIT('VAT ');
     END;
 
     BEGIN

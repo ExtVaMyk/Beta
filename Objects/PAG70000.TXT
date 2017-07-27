@@ -2,9 +2,10 @@ OBJECT Page 70000 ForNAV Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=06-07-17;
-    Time=13:30:52;
-    Version List=FORNAVCTP3;
+    Date=20-07-17;
+    Time=19:51:52;
+    Modified=Yes;
+    Version List=FORNAVCTP5;
   }
   PROPERTIES
   {
@@ -15,6 +16,10 @@ OBJECT Page 70000 ForNAV Setup
     OnOpenPage=BEGIN
                  InitSetup;
                END;
+
+    OnAfterGetRecord=BEGIN
+                       WrongLocalization := NOT ValidateCurrentLocalization;
+                     END;
 
     ActionList=ACTIONS
     {
@@ -56,6 +61,17 @@ OBJECT Page 70000 ForNAV Setup
                                  RunTest;
                                END;
                                 }
+      { 1000000014;1 ;Action    ;
+                      Name=DesignTemplate;
+                      CaptionML=ENU=Design General Template;
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=UnitOfMeasure;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 DesignTemplate;
+                               END;
+                                }
       { 4       ;1   ;Action    ;
                       Name=DesignSalesTemplate;
                       CaptionML=ENU=Design Sales Template;
@@ -64,7 +80,6 @@ OBJECT Page 70000 ForNAV Setup
                       PromotedIsBig=Yes;
                       Image=Design;
                       PromotedCategory=Process;
-                      PromotedOnly=Yes;
                       OnAction=BEGIN
                                  DesignSalesTemplate;
                                END;
@@ -77,9 +92,20 @@ OBJECT Page 70000 ForNAV Setup
                       PromotedIsBig=Yes;
                       Image=DesignCodeBehind;
                       PromotedCategory=Process;
-                      PromotedOnly=Yes;
                       OnAction=BEGIN
                                  DesignPurchaseTemplate;
+                               END;
+                                }
+      { 7       ;1   ;Action    ;
+                      Name=CheckLocalization;
+                      CaptionML=ENU=Check Localization;
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=MapSetup;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 CheckLocalizationBasedOnTables;
+                                 MODIFY;
                                END;
                                 }
       { 1000000011;0 ;ActionContainer;
@@ -102,16 +128,25 @@ OBJECT Page 70000 ForNAV Setup
                 Name=General;
                 GroupType=Group }
 
+    { 6   ;2   ;Field     ;
+                SourceExpr=Localization;
+                Style=Unfavorable;
+                StyleExpr=WrongLocalization }
+
     { 1000000002;1;Group  ;
-                Name=VAT;
+                Name=VAT/Sales Tax;
                 GroupType=Group }
 
     { 1000000003;2;Field  ;
                 SourceExpr="VAT Amount Specification" }
 
     { 1000000004;1;Group  ;
-                Name=Legal Clause;
+                Name=Document Texts;
                 GroupType=Group }
+
+    { 5   ;2   ;Field     ;
+                SourceExpr="Payment Note";
+                MultiLine=Yes }
 
     { 1000000005;2;Field  ;
                 SourceExpr="Legal Conditions";
@@ -131,6 +166,8 @@ OBJECT Page 70000 ForNAV Setup
   }
   CODE
   {
+    VAR
+      WrongLocalization@1000 : Boolean INDATASET;
 
     BEGIN
     {

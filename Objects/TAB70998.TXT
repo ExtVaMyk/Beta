@@ -1,0 +1,33 @@
+OBJECT Table 70998 ForNAV Sales Tax Buffer
+{
+  OBJECT-PROPERTIES
+  {
+    Date=17-07-17;
+    Time=15:23:01;
+    Modified=Yes;
+    Version List=FORNAVCTP5;
+  }
+  PROPERTIES
+  {
+  }
+  FIELDS
+  {
+    { 1   ;   ;Primary Key         ;Code10         }
+    { 2   ;   ;Exempt Amount       ;Decimal        }
+    { 3   ;   ;Taxable Amount      ;Decimal        }
+  }
+  KEYS
+  {
+    {    ;Primary Key                             ;Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+
