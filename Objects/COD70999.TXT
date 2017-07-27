@@ -2,9 +2,9 @@ OBJECT Codeunit 70999 ForNAV Test
 {
   OBJECT-PROPERTIES
   {
-    Date=07-07-17;
-    Time=13:49:49;
-    Version List=FORNAVCTP3;
+    Date=14-07-17;
+    Time=14:59:43;
+    Version List=FORNAVCTP4;
   }
   PROPERTIES
   {
@@ -61,20 +61,6 @@ OBJECT Codeunit 70999 ForNAV Test
     END;
 
     [Test]
-    PROCEDURE TestReports@1000000003();
-    VAR
-      Obj@1000000000 : Record 2000000001;
-      PathObj@1000000001 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Path" RUNONCLIENT;
-    BEGIN
-      Obj.SETRANGE(Type, Obj.Type::Report);
-      Obj.SETRANGE(ID, 70000, 70999);
-      Obj.FINDSET;
-      REPEAT
-      //  REPORT.RUN(Obj.ID); //ToDo
-      UNTIL Obj.NEXT = 0;
-    END;
-
-    [Test]
     PROCEDURE TestLegalConditions@1000000005();
     VAR
       ForNAVSetup@1000000000 : Record 70000;
@@ -95,9 +81,87 @@ OBJECT Codeunit 70999 ForNAV Test
 
     END;
 
-    [ReportHandler]
-    PROCEDURE HandleRequestPage@1000000004(VAR ForNAVOrderConfirmation@1000000000 : Report 70000);
+    [Test]
+    PROCEDURE TestNoPrinted@1000000003();
+    VAR
+      SalesHeader@1000000000 : Record 36;
+      PurchaseHeader@1000000001 : Record 38;
+      SalesShipmentHeader@1000000002 : Record 110;
+      SalesInvoiceHeader@1000000003 : Record 112;
+      SalesCrMemoHeader@1000000004 : Record 114;
+      PurchRcptHeader@1000000005 : Record 120;
+      PurchInvHeader@1000000006 : Record 122;
+      PurchCrMemoHdr@1000000007 : Record 124;
+      CompanyInformation@1000000008 : Record 79;
+      UpdateNoPrinted@1000000010 : Codeunit 70003;
+      xNoPrinted@1000000009 : Integer;
     BEGIN
+      WITH SalesHeader DO
+        IF FINDSET THEN REPEAT
+          xNoPrinted := "No. Printed";
+          UpdateNoPrinted.UpdateNoPrinted(SalesHeader);
+          FIND;
+          TESTFIELD("No. Printed", xNoPrinted + 1);
+        UNTIL NEXT = 0;
+
+      WITH SalesShipmentHeader DO
+        IF FINDSET THEN REPEAT
+          xNoPrinted := "No. Printed";
+          UpdateNoPrinted.UpdateNoPrinted(SalesShipmentHeader);
+          FIND;
+          TESTFIELD("No. Printed", xNoPrinted + 1);
+        UNTIL NEXT = 0;
+
+      WITH SalesInvoiceHeader DO
+        IF FINDSET THEN REPEAT
+          xNoPrinted := "No. Printed";
+          UpdateNoPrinted.UpdateNoPrinted(SalesInvoiceHeader);
+          FIND;
+          TESTFIELD("No. Printed", xNoPrinted + 1);
+        UNTIL NEXT = 0;
+
+      WITH SalesCrMemoHeader DO
+        IF FINDSET THEN REPEAT
+          xNoPrinted := "No. Printed";
+          UpdateNoPrinted.UpdateNoPrinted(SalesCrMemoHeader);
+          FIND;
+          TESTFIELD("No. Printed", xNoPrinted + 1);
+        UNTIL NEXT = 0;
+
+      WITH PurchaseHeader DO
+        IF FINDSET THEN REPEAT
+          xNoPrinted := "No. Printed";
+          UpdateNoPrinted.UpdateNoPrinted(PurchaseHeader);
+          FIND;
+          TESTFIELD("No. Printed", xNoPrinted + 1);
+        UNTIL NEXT = 0;
+
+      WITH PurchRcptHeader DO
+        IF FINDSET THEN REPEAT
+          xNoPrinted := "No. Printed";
+          UpdateNoPrinted.UpdateNoPrinted(PurchRcptHeader);
+          FIND;
+          TESTFIELD("No. Printed", xNoPrinted + 1);
+        UNTIL NEXT = 0;
+
+      WITH PurchInvHeader DO
+        IF FINDSET THEN REPEAT
+          xNoPrinted := "No. Printed";
+          UpdateNoPrinted.UpdateNoPrinted(PurchInvHeader);
+          FIND;
+          TESTFIELD("No. Printed", xNoPrinted + 1);
+        UNTIL NEXT = 0;
+
+      WITH PurchCrMemoHdr DO
+        IF FINDSET THEN REPEAT
+          xNoPrinted := "No. Printed";
+          UpdateNoPrinted.UpdateNoPrinted(PurchCrMemoHdr);
+          FIND;
+          TESTFIELD("No. Printed", xNoPrinted + 1);
+        UNTIL NEXT = 0;
+
+      CompanyInformation.GET;
+      ASSERTERROR UpdateNoPrinted.UpdateNoPrinted(CompanyInformation);
     END;
 
     BEGIN

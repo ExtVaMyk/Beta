@@ -1,0 +1,68 @@
+OBJECT Codeunit 70701 Create Report Tests as PDF
+{
+  OBJECT-PROPERTIES
+  {
+    Date=14-07-17;
+    Time=15:15:33;
+    Version List=FORNAVCTP4;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+            ForEachReportWriteATestCodeunit;
+          END;
+
+  }
+  CODE
+  {
+
+    LOCAL PROCEDURE ForEachReportWriteATestCodeunit@1000000001();
+    VAR
+      AllObjWithCaption@1000000000 : Record 2000000058;
+      TheFile@1000000001 : File;
+    BEGIN
+      TheFile.TEXTMODE(TRUE);
+      TheFile.CREATE('Q:\Test.Txt');
+
+      WITH AllObjWithCaption DO BEGIN
+        SETRANGE("Object Type", "Object Type"::Report);
+        SETRANGE("Object ID", 70000, 70999);
+        IF FINDSET THEN REPEAT
+          WriteTheCodeunitToATextFile(AllObjWithCaption, TheFile);
+        UNTIL NEXT = 0;
+      END;
+      TheFile.CLOSE;
+    END;
+
+    LOCAL PROCEDURE WriteTheCodeunitToATextFile@1000000003(AllObjWithCaption@1000000000 : Record 2000000058;VAR TheFile@1000000002 : File);
+    VAR
+      TheObject@1000000001 : TextConst 'ENU="OBJECT Codeunit %2 %1 { OBJECT-PROPERTIES   {    Version List=FORNAVTEST;  }  PROPERTIES  {    Subtype=Test;    OnRun=BEGIN          END;  }  CODE  {    [Test]    PROCEDURE TestReport@1();    BEGIN REPORT.SAVEASPDF(REPORT::REPORT%3, ''Q:\%4.xml'');    END;    BEGIN    {      Copyright (c) 2017 ForNAV ApS - All Rights Reserved      The intellectual work and technical concepts contained in this file are proprietary to ForNAV.      Unauthorized reverse engineering, distribution or copying of this file, parts hereof, or derived work, via any medium is strictly prohibited without written permission from ForNAV ApS.      This source code is distributed on an ""AS IS"" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.    }    END.  }}"';
+    BEGIN
+      TheFile.WRITE(STRSUBSTNO(TheObject, ObjName(AllObjWithCaption), TestObjAsString(AllObjWithCaption), ObjAsString(AllObjWithCaption), ObjNameWithoutSpaces(AllObjWithCaption)));
+    END;
+
+    LOCAL PROCEDURE ObjAsString@1000000000(AllObjWithCaption@1000000000 : Record 2000000058) : Text;
+    BEGIN
+      EXIT(FORMAT(AllObjWithCaption."Object ID"));
+    END;
+
+    LOCAL PROCEDURE TestObjAsString@1000000002(AllObjWithCaption@1000000000 : Record 2000000058) : Text;
+    BEGIN
+      EXIT('1' + ObjAsString(AllObjWithCaption));
+    END;
+
+    LOCAL PROCEDURE ObjName@1000000004(AllObjWithCaption@1000000000 : Record 2000000058) : Text;
+    BEGIN
+      EXIT(AllObjWithCaption."Object Name");
+    END;
+
+    LOCAL PROCEDURE ObjNameWithoutSpaces@1000000005(AllObjWithCaption@1000000000 : Record 2000000058) : Text;
+    BEGIN
+      EXIT(DELCHR(ObjName(AllObjWithCaption)));
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

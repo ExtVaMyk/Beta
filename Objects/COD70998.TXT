@@ -2,9 +2,9 @@ OBJECT Codeunit 70998 ForNAV Test Runner
 {
   OBJECT-PROPERTIES
   {
-    Date=01-05-17;
-    Time=12:00:00;
-    Version List=FORNAVBETA;
+    Date=14-07-17;
+    Time=12:08:41;
+    Version List=FORNAVCTP4;
   }
   PROPERTIES
   {
@@ -12,6 +12,7 @@ OBJECT Codeunit 70998 ForNAV Test Runner
     TestIsolation=Codeunit;
     OnRun=VAR
             ForNAVTest@1000000000 : Codeunit 70999;
+            AllObjWithCaption@1000000001 : Record 2000000058;
           BEGIN
             ForNAVTest.RUN;
           END;

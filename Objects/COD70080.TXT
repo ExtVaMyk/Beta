@@ -2,9 +2,9 @@ OBJECT Codeunit 70080 ForNAV Test Valid Doc iFace
 {
   OBJECT-PROPERTIES
   {
-    Date=01-05-17;
-    Time=12:00:00;
-    Version List=FORNAVBETA;
+    Date=14-07-17;
+    Time=14:59:03;
+    Version List=FORNAVCTP4;
   }
   PROPERTIES
   {
@@ -18,7 +18,7 @@ OBJECT Codeunit 70080 ForNAV Test Valid Doc iFace
     PROCEDURE ThrowErrorIfNotValid@1000000000(VAR RecRef@1000000000 : RecordRef);
     VAR
       IsValid@1000000001 : Boolean;
-      NotValidTableErr@1000000002 : TextConst 'ENU="This table (ID = %1) is not supported for this function."';
+      NotValidTableErr@1000000002 : TextConst 'ENU=This table (%1) is not supported for this function.';
     BEGIN
       CASE RecRef.NUMBER OF
         DATABASE::"Sales Header":
@@ -29,11 +29,19 @@ OBJECT Codeunit 70080 ForNAV Test Valid Doc iFace
           EXIT;
         DATABASE::"Sales Cr.Memo Header":
           EXIT;
+        DATABASE::"Purchase Header":
+          EXIT;
+        DATABASE::"Purch. Rcpt. Header":
+          EXIT;
+        DATABASE::"Purch. Inv. Header":
+          EXIT;
+        DATABASE::"Purch. Cr. Memo Hdr.":
+          EXIT;
       END;
 
       CheckForValidPartnerTables(RecRef, IsValid);
-      IF IsValid THEN
-        ERROR(NotValidTableErr);
+      IF NOT IsValid THEN
+        ERROR(NotValidTableErr, RecRef.CAPTION);
     END;
 
     [Business]
