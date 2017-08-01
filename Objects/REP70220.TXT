@@ -2,10 +2,10 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
 {
   OBJECT-PROPERTIES
   {
-    Date=21-07-17;
-    Time=12:28:01;
+    Date=17-08-01;
+    Time=18:07:32;
     Modified=Yes;
-    Version List=WIP,FORNAV2.0.0.1259/1259;
+    Version List=VAM1,FORNAV2.0.0.1260/1260;
   }
   PROPERTIES
   {
@@ -17,13 +17,9 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
     OnPreReport=VAR
                   CaptionManagement@1000 : Codeunit 42;
                 BEGIN
-                  CustFilter := CaptionManagement.GetRecordFiltersWithCaptions(Customer);
                   GLSetup.GET;
                   CalcDates;
                   CreateHeadings;
-                  PageGroupNo := 1;
-                  NextPageGroupNo := 1;
-                  CustFilterCheck := (CustFilter <> 'No.');
                   ;ReportForNav.OpenDesigner:=ReportForNavOpenDesigner;IF NOT ReportForNav.Pre THEN CurrReport.QUIT;
                 END;
 
@@ -36,14 +32,7 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
   {
     { 6836;    ;DataItem;Customer            ;
                DataItemTable=Table18;
-               PrintOnlyIfDetail=Yes;
-               OnPreDataItem=BEGIN
-                               ReportForNav.GetDataItem('Customer').NewPagePerRecord := NewPagePercustomer;
-                             END;
-
                OnAfterGetRecord=BEGIN
-                                  IF NewPagePercustomer THEN
-                                    PageGroupNo += 1;
                                   TempCurrency.RESET;
                                   TempCurrency.DELETEALL;
                                   TempCustLedgEntry.RESET;
@@ -64,79 +53,17 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
                IncludeCaption=No;
                SourceExpr=PrintAmountInLCY }
 
-    { 1   ;1   ;Column  ;TableCaptnCustFilter;
-               IncludeCaption=No;
-               SourceExpr=TABLECAPTION + ': ' + CustFilter }
-
-    { 129 ;1   ;Column  ;CustFilter          ;
-               IncludeCaption=No;
-               SourceExpr=CustFilter }
-
     { 130 ;1   ;Column  ;AgingByDueDate      ;
                IncludeCaption=No;
                SourceExpr=AgingBy = AgingBy::"Due Date" }
 
+    { 1   ;1   ;Column  ;AgedOverdueAmtCptn  ;
+               IncludeCaption=No;
+               SourceExpr=AgedOverdueAmtCptnLbl }
+
     { 131 ;1   ;Column  ;PrintDetails        ;
                IncludeCaption=No;
                SourceExpr=PrintDetails }
-
-    { 42  ;1   ;Column  ;GrandTotalCLE5RemAmt;
-               IncludeCaption=No;
-               SourceExpr=GrandTotalCustLedgEntry[5]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 43  ;1   ;Column  ;GrandTotalCLE4RemAmt;
-               IncludeCaption=No;
-               SourceExpr=GrandTotalCustLedgEntry[4]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 44  ;1   ;Column  ;GrandTotalCLE3RemAmt;
-               IncludeCaption=No;
-               SourceExpr=GrandTotalCustLedgEntry[3]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 45  ;1   ;Column  ;GrandTotalCLE2RemAmt;
-               IncludeCaption=No;
-               SourceExpr=GrandTotalCustLedgEntry[2]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 46  ;1   ;Column  ;GrandTotalCLE1RemAmt;
-               IncludeCaption=No;
-               SourceExpr=GrandTotalCustLedgEntry[1]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 47  ;1   ;Column  ;GrandTotalCLEAmtLCY ;
-               IncludeCaption=No;
-               SourceExpr=GrandTotalCustLedgEntry[1]."Amount (LCY)";
-               AutoFormatType=1 }
-
-    { 48  ;1   ;Column  ;GrandTotalCLE1CustRemAmtLCY;
-               IncludeCaption=No;
-               SourceExpr=Pct(GrandTotalCustLedgEntry[1]."Remaining Amt. (LCY)",GrandTotalCustLedgEntry[1]."Amount (LCY)") }
-
-    { 49  ;1   ;Column  ;GrandTotalCLE2CustRemAmtLCY;
-               IncludeCaption=No;
-               SourceExpr=Pct(GrandTotalCustLedgEntry[2]."Remaining Amt. (LCY)",GrandTotalCustLedgEntry[1]."Amount (LCY)") }
-
-    { 50  ;1   ;Column  ;GrandTotalCLE3CustRemAmtLCY;
-               IncludeCaption=No;
-               SourceExpr=Pct(GrandTotalCustLedgEntry[3]."Remaining Amt. (LCY)",GrandTotalCustLedgEntry[1]."Amount (LCY)") }
-
-    { 51  ;1   ;Column  ;GrandTotalCLE4CustRemAmtLCY;
-               IncludeCaption=No;
-               SourceExpr=Pct(GrandTotalCustLedgEntry[4]."Remaining Amt. (LCY)",GrandTotalCustLedgEntry[1]."Amount (LCY)") }
-
-    { 52  ;1   ;Column  ;GrandTotalCLE5CustRemAmtLCY;
-               IncludeCaption=No;
-               SourceExpr=Pct(GrandTotalCustLedgEntry[5]."Remaining Amt. (LCY)",GrandTotalCustLedgEntry[1]."Amount (LCY)") }
-
-    { 5   ;1   ;Column  ;NewPagePercustomer  ;
-               IncludeCaption=No;
-               SourceExpr=NewPagePercustomer }
-
-    { 7   ;1   ;Column  ;PageGroupNo         ;
-               IncludeCaption=No;
-               SourceExpr=PageGroupNo }
 
     { 2   ;1   ;Column  ;HeaderText1         ;
                IncludeCaption=No;
@@ -226,7 +153,7 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
                              END;
 
                OnAfterGetRecord=BEGIN
-                                  CLEAR(TotalCustLedgEntry);
+                                  LCYCurrency := FALSE;
                                   IF Number = 1 THEN BEGIN
                                     IF NOT TempCurrency.FINDSET(FALSE,FALSE) THEN
                                       CurrReport.BREAK;
@@ -235,8 +162,10 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
                                       CurrReport.BREAK;
                                   IF TempCurrency.Code <> '' THEN
                                     CurrencyCode := TempCurrency.Code
-                                  ELSE
+                                  ELSE BEGIN
                                     CurrencyCode := GLSetup."LCY Code";
+                                    LCYCurrency := TRUE;
+                                  END;
                                   NumberOfCurrencies := NumberOfCurrencies + 1;
                                 END;
                                  }
@@ -247,14 +176,11 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
                                  WHERE(Number=FILTER(1..));
                OnPreDataItem=BEGIN
                                IF NOT PrintAmountInLCY THEN BEGIN
-                                 IF (TempCurrency.Code = '') OR (TempCurrency.Code = GLSetup."LCY Code") THEN
-                                   TempCustLedgEntry.SETFILTER("Currency Code",'%1|%2',GLSetup."LCY Code",'')
+                                 IF (CurrencyCode = '') OR (CurrencyCode = GLSetup."LCY Code") THEN
+                                   TempCustLedgEntry.SETFILTER("Currency Code",'%1|%2',CurrencyCode,'')
                                  ELSE
-                                   TempCustLedgEntry.SETRANGE("Currency Code",TempCurrency.Code);
+                                   TempCustLedgEntry.SETRANGE("Currency Code",CurrencyCode);
                                END;
-                               PageGroupNo := NextPageGroupNo;
-                               IF NewPagePercustomer AND (NumberOfCurrencies > 0) THEN
-                                 NextPageGroupNo := PageGroupNo + 1;
                              END;
 
                OnAfterGetRecord=VAR
@@ -266,30 +192,42 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
                                   END ELSE
                                     IF TempCustLedgEntry.NEXT = 0 THEN
                                       CurrReport.BREAK;
-                                  CustLedgEntryEndingDate := TempCustLedgEntry;
-                                  DetailedCustomerLedgerEntry.SETRANGE("Cust. Ledger Entry No.",CustLedgEntryEndingDate."Entry No.");
+
+                                  AccountsReceivblBuffer.INIT;
+                                  AccountsReceivblBuffer."Entry No." := TempCustLedgEntry."Entry No.";
+                                  AccountsReceivblBuffer.Type := AccountsReceivblBuffer.Type::CustomerEntry;
+                                  AccountsReceivblBuffer."Customer No." := TempCustLedgEntry."Customer No.";
+                                  AccountsReceivblBuffer."Currency Code" := CurrencyCode;
+                                  AccountsReceivblBuffer."Customer to Currency Groupping" := TempCustLedgEntry."Customer No." + ' ' + CurrencyCode;
+                                  AccountsReceivblBuffer."Document No." := TempCustLedgEntry."Document No.";
+                                  AccountsReceivblBuffer."Document Type" := TempCustLedgEntry."Document Type";
+                                  AccountsReceivblBuffer."Document Date" := TempCustLedgEntry."Document Date";
+                                  AccountsReceivblBuffer."Posting Date" := TempCustLedgEntry."Posting Date";
+                                  AccountsReceivblBuffer."Due Date" := TempCustLedgEntry."Due Date";
+                                  AccountsReceivblBuffer."New Page" := NewPagePercustomer;
+                                  DetailedCustomerLedgerEntry.SETRANGE("Cust. Ledger Entry No.",TempCustLedgEntry."Entry No.");
                                   IF DetailedCustomerLedgerEntry.FINDSET(FALSE,FALSE) THEN
                                     REPEAT
                                       IF (DetailedCustomerLedgerEntry."Entry Type" =
                                           DetailedCustomerLedgerEntry."Entry Type"::"Initial Entry") AND
-                                         (CustLedgEntryEndingDate."Posting Date" > EndingDate) AND
+                                         (TempCustLedgEntry."Posting Date" > EndingDate) AND
                                          (AgingBy <> AgingBy::"Posting Date")
                                       THEN BEGIN
-                                        IF CustLedgEntryEndingDate."Document Date" <= EndingDate THEN
+                                        IF TempCustLedgEntry."Document Date" <= EndingDate THEN
                                           DetailedCustomerLedgerEntry."Posting Date" :=
-                                            CustLedgEntryEndingDate."Document Date"
+                                            TempCustLedgEntry."Document Date"
                                         ELSE
-                                          IF (CustLedgEntryEndingDate."Due Date" <= EndingDate) AND
+                                          IF (TempCustLedgEntry."Due Date" <= EndingDate) AND
                                              (AgingBy = AgingBy::"Due Date")
                                           THEN
                                             DetailedCustomerLedgerEntry."Posting Date" :=
-                                              CustLedgEntryEndingDate."Due Date"
+                                              TempCustLedgEntry."Due Date";
                                       END;
                                       IF (DetailedCustomerLedgerEntry."Posting Date" <= EndingDate) OR
                                          (TempCustLedgEntry.Open AND
                                           (AgingBy = AgingBy::"Due Date") AND
-                                          (CustLedgEntryEndingDate."Due Date" > EndingDate) AND
-                                          (CustLedgEntryEndingDate."Posting Date" <= EndingDate))
+                                          (TempCustLedgEntry."Due Date" > EndingDate) AND
+                                          (TempCustLedgEntry."Posting Date" <= EndingDate))
                                       THEN BEGIN
                                         IF DetailedCustomerLedgerEntry."Entry Type" IN
                                            [DetailedCustomerLedgerEntry."Entry Type"::"Initial Entry",
@@ -307,330 +245,78 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
                                             DetailedCustomerLedgerEntry."Entry Type"::"Payment Discount Tolerance (VAT Excl.)",
                                             DetailedCustomerLedgerEntry."Entry Type"::"Payment Discount Tolerance (VAT Adjustment)"]
                                         THEN BEGIN
-                                          CustLedgEntryEndingDate.Amount := CustLedgEntryEndingDate.Amount + DetailedCustomerLedgerEntry.Amount;
-                                          CustLedgEntryEndingDate."Amount (LCY)" :=
-                                            CustLedgEntryEndingDate."Amount (LCY)" + DetailedCustomerLedgerEntry."Amount (LCY)";
+                                          IF PrintAmountInLCY THEN
+                                            AccountsReceivblBuffer.Amount += DetailedCustomerLedgerEntry."Amount (LCY)"
+                                          ELSE
+                                            AccountsReceivblBuffer.Amount += DetailedCustomerLedgerEntry.Amount;
+                                          AccountsReceivblBuffer."Amount (LCY)" += DetailedCustomerLedgerEntry."Amount (LCY)";
                                         END;
                                         IF DetailedCustomerLedgerEntry."Posting Date" <= EndingDate THEN BEGIN
-                                          CustLedgEntryEndingDate."Remaining Amount" :=
-                                            CustLedgEntryEndingDate."Remaining Amount" + DetailedCustomerLedgerEntry.Amount;
-                                          CustLedgEntryEndingDate."Remaining Amt. (LCY)" :=
-                                            CustLedgEntryEndingDate."Remaining Amt. (LCY)" + DetailedCustomerLedgerEntry."Amount (LCY)";
+                                          IF PrintAmountInLCY THEN
+                                            AccountsReceivblBuffer.Balance += DetailedCustomerLedgerEntry."Amount (LCY)"
+                                          ELSE
+                                            AccountsReceivblBuffer.Balance += DetailedCustomerLedgerEntry.Amount;
+                                          AccountsReceivblBuffer."Balance (LCY)" += DetailedCustomerLedgerEntry."Amount (LCY)";
                                         END;
                                       END;
                                     UNTIL DetailedCustomerLedgerEntry.NEXT = 0;
-                                  IF CustLedgEntryEndingDate."Remaining Amount" = 0 THEN
+
+                                  IF AccountsReceivblBuffer.Balance = 0 THEN
                                     CurrReport.SKIP;
                                   CASE AgingBy OF
                                     AgingBy::"Due Date":
-                                      PeriodIndex := GetPeriodIndex(CustLedgEntryEndingDate."Due Date");
+                                      PeriodIndex := GetPeriodIndex(AccountsReceivblBuffer."Due Date");
                                     AgingBy::"Posting Date":
-                                      PeriodIndex := GetPeriodIndex(CustLedgEntryEndingDate."Posting Date");
+                                      PeriodIndex := GetPeriodIndex(AccountsReceivblBuffer."Posting Date");
                                     AgingBy::"Document Date":
                                       BEGIN
-                                        IF CustLedgEntryEndingDate."Document Date" > EndingDate THEN BEGIN
-                                          CustLedgEntryEndingDate."Remaining Amount" := 0;
-                                          CustLedgEntryEndingDate."Remaining Amt. (LCY)" := 0;
-                                          CustLedgEntryEndingDate."Document Date" := CustLedgEntryEndingDate."Posting Date";
+                                        IF AccountsReceivblBuffer."Document Date" > EndingDate THEN BEGIN
+                                          AccountsReceivblBuffer.Balance := 0;
+                                          AccountsReceivblBuffer."Balance (LCY)" := 0;
+                                          AccountsReceivblBuffer."Document Date" := AccountsReceivblBuffer."Posting Date";
                                         END;
-                                        PeriodIndex := GetPeriodIndex(CustLedgEntryEndingDate."Document Date");
+                                        PeriodIndex := GetPeriodIndex(AccountsReceivblBuffer."Document Date");
                                       END;
                                   END;
-                                  CLEAR(AgedCustLedgEntry);
-                                  AgedCustLedgEntry[PeriodIndex]."Remaining Amount" := CustLedgEntryEndingDate."Remaining Amount";
-                                  AgedCustLedgEntry[PeriodIndex]."Remaining Amt. (LCY)" := CustLedgEntryEndingDate."Remaining Amt. (LCY)";
-                                  TotalCustLedgEntry[PeriodIndex]."Remaining Amount" += CustLedgEntryEndingDate."Remaining Amount";
-                                  TotalCustLedgEntry[PeriodIndex]."Remaining Amt. (LCY)" += CustLedgEntryEndingDate."Remaining Amt. (LCY)";
-                                  GrandTotalCustLedgEntry[PeriodIndex]."Remaining Amt. (LCY)" += CustLedgEntryEndingDate."Remaining Amt. (LCY)";
-                                  TotalCustLedgEntry[1].Amount += CustLedgEntryEndingDate."Remaining Amount";
-                                  TotalCustLedgEntry[1]."Amount (LCY)" += CustLedgEntryEndingDate."Remaining Amt. (LCY)";
-                                  GrandTotalCustLedgEntry[1]."Amount (LCY)" += CustLedgEntryEndingDate."Remaining Amt. (LCY)";
-                                END;
 
-               OnPostDataItem=BEGIN
-                                IF NOT PrintAmountInLCY THEN
-                                  UpdateCurrencyTotals;
-                              END;
-                               }
+                                  CASE PeriodIndex OF
+                                    1: BEGIN
+                                        AccountsReceivblBuffer."Amount - Interval 1" := AccountsReceivblBuffer.Balance;
+                                        AccountsReceivblBuffer."Amount - Interval 1 (LCY)" := AccountsReceivblBuffer."Balance (LCY)";
+                                       END;
+                                    2: BEGIN
+                                          AccountsReceivblBuffer."Amount - Interval 2" := AccountsReceivblBuffer.Balance;
+                                          AccountsReceivblBuffer."Amount - Interval 2 (LCY)" := AccountsReceivblBuffer."Balance (LCY)";
+                                         END;
+                                    3: BEGIN
+                                          AccountsReceivblBuffer."Amount - Interval 3" := AccountsReceivblBuffer.Balance;
+                                          AccountsReceivblBuffer."Amount - Interval 3 (LCY)" := AccountsReceivblBuffer."Balance (LCY)";
+                                         END;
+                                    4: BEGIN
+                                          AccountsReceivblBuffer."Amount - Interval 4" := AccountsReceivblBuffer.Balance;
+                                          AccountsReceivblBuffer."Amount - Interval 4 (LCY)" := AccountsReceivblBuffer."Balance (LCY)";
+                                         END;
+                                    5: BEGIN
+                                          AccountsReceivblBuffer."Amount - Interval 5" := AccountsReceivblBuffer.Balance;
+                                          AccountsReceivblBuffer."Amount - Interval 5 (LCY)" := AccountsReceivblBuffer."Balance (LCY)";
+                                         END;
+                                  END;
+                                  AccountsReceivblBuffer.INSERT;
 
-    { 58  ;3   ;Column  ;CLEEndDateRemAmtLCY ;
-               IncludeCaption=No;
-               SourceExpr=CustLedgEntryEndingDate."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 59  ;3   ;Column  ;AgedCLE1RemAmtLCY   ;
-               IncludeCaption=No;
-               SourceExpr=AgedCustLedgEntry[1]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 60  ;3   ;Column  ;AgedCLE2RemAmtLCY   ;
-               IncludeCaption=No;
-               SourceExpr=AgedCustLedgEntry[2]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 61  ;3   ;Column  ;AgedCLE3RemAmtLCY   ;
-               IncludeCaption=No;
-               SourceExpr=AgedCustLedgEntry[3]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 62  ;3   ;Column  ;AgedCLE4RemAmtLCY   ;
-               IncludeCaption=No;
-               SourceExpr=AgedCustLedgEntry[4]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 63  ;3   ;Column  ;AgedCLE5RemAmtLCY   ;
-               IncludeCaption=No;
-               SourceExpr=AgedCustLedgEntry[5]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 65  ;3   ;Column  ;CLEEndDateAmtLCY    ;
-               IncludeCaption=No;
-               SourceExpr=CustLedgEntryEndingDate."Amount (LCY)";
-               AutoFormatType=1 }
-
-    { 66  ;3   ;Column  ;CLEEndDueDate       ;
-               IncludeCaption=No;
-               SourceExpr=FORMAT(CustLedgEntryEndingDate."Due Date") }
-
-    { 67  ;3   ;Column  ;CLEEndDateDocNo     ;
-               IncludeCaption=No;
-               SourceExpr=CustLedgEntryEndingDate."Document No." }
-
-    { 68  ;3   ;Column  ;CLEDocType          ;
-               IncludeCaption=No;
-               SourceExpr=FORMAT(CustLedgEntryEndingDate."Document Type") }
-
-    { 69  ;3   ;Column  ;CLEPostingDate      ;
-               IncludeCaption=No;
-               SourceExpr=FORMAT(CustLedgEntryEndingDate."Posting Date") }
-
-    { 89  ;3   ;Column  ;AgedCLE5TempRemAmt  ;
-               IncludeCaption=No;
-               SourceExpr=AgedCustLedgEntry[5]."Remaining Amount";
-               AutoFormatType=1;
-               AutoFormatExpr=CurrencyCode }
-
-    { 90  ;3   ;Column  ;AgedCLE4TempRemAmt  ;
-               IncludeCaption=No;
-               SourceExpr=AgedCustLedgEntry[4]."Remaining Amount";
-               AutoFormatType=1;
-               AutoFormatExpr=CurrencyCode }
-
-    { 91  ;3   ;Column  ;AgedCLE3TempRemAmt  ;
-               IncludeCaption=No;
-               SourceExpr=AgedCustLedgEntry[3]."Remaining Amount";
-               AutoFormatType=1;
-               AutoFormatExpr=CurrencyCode }
-
-    { 92  ;3   ;Column  ;AgedCLE2TempRemAmt  ;
-               IncludeCaption=No;
-               SourceExpr=AgedCustLedgEntry[2]."Remaining Amount";
-               AutoFormatType=1;
-               AutoFormatExpr=CurrencyCode }
-
-    { 93  ;3   ;Column  ;AgedCLE1TempRemAmt  ;
-               IncludeCaption=No;
-               SourceExpr=AgedCustLedgEntry[1]."Remaining Amount";
-               AutoFormatType=1;
-               AutoFormatExpr=CurrencyCode }
-
-    { 94  ;3   ;Column  ;RemAmt_CLEEndDate   ;
-               IncludeCaption=No;
-               SourceExpr=CustLedgEntryEndingDate."Remaining Amount";
-               AutoFormatType=1;
-               AutoFormatExpr=CurrencyCode }
-
-    { 95  ;3   ;Column  ;CLEEndDate          ;
-               IncludeCaption=No;
-               SourceExpr=CustLedgEntryEndingDate.Amount;
-               AutoFormatType=1;
-               AutoFormatExpr=CurrencyCode }
-
-    { 83  ;3   ;Column  ;TotalCLE1AmtLCY     ;
-               IncludeCaption=No;
-               SourceExpr=TotalCustLedgEntry[1]."Amount (LCY)";
-               AutoFormatType=1 }
-
-    { 84  ;3   ;Column  ;TotalCLE1RemAmtLCY  ;
-               IncludeCaption=No;
-               SourceExpr=TotalCustLedgEntry[1]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 85  ;3   ;Column  ;TotalCLE2RemAmtLCY  ;
-               IncludeCaption=No;
-               SourceExpr=TotalCustLedgEntry[2]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 86  ;3   ;Column  ;TotalCLE3RemAmtLCY  ;
-               IncludeCaption=No;
-               SourceExpr=TotalCustLedgEntry[3]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 87  ;3   ;Column  ;TotalCLE4RemAmtLCY  ;
-               IncludeCaption=No;
-               SourceExpr=TotalCustLedgEntry[4]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 88  ;3   ;Column  ;TotalCLE5RemAmtLCY  ;
-               IncludeCaption=No;
-               SourceExpr=TotalCustLedgEntry[5]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 100 ;3   ;Column  ;CurrrencyCode       ;
-               IncludeCaption=No;
-               SourceExpr=CurrencyCode;
-               AutoFormatType=1;
-               AutoFormatExpr=CurrencyCode }
-
-    { 102 ;3   ;Column  ;TotalCLE5RemAmt     ;
-               IncludeCaption=No;
-               SourceExpr=TotalCustLedgEntry[5]."Remaining Amount";
-               AutoFormatType=1 }
-
-    { 103 ;3   ;Column  ;TotalCLE4RemAmt     ;
-               IncludeCaption=No;
-               SourceExpr=TotalCustLedgEntry[4]."Remaining Amount";
-               AutoFormatType=1 }
-
-    { 104 ;3   ;Column  ;TotalCLE3RemAmt     ;
-               IncludeCaption=No;
-               SourceExpr=TotalCustLedgEntry[3]."Remaining Amount";
-               AutoFormatType=1 }
-
-    { 105 ;3   ;Column  ;TotalCLE2RemAmt     ;
-               IncludeCaption=No;
-               SourceExpr=TotalCustLedgEntry[2]."Remaining Amount";
-               AutoFormatType=1 }
-
-    { 106 ;3   ;Column  ;TotalCLE1RemAmt     ;
-               IncludeCaption=No;
-               SourceExpr=TotalCustLedgEntry[1]."Remaining Amount";
-               AutoFormatType=1 }
-
-    { 107 ;3   ;Column  ;TotalCLE1Amt        ;
-               IncludeCaption=No;
-               SourceExpr=TotalCustLedgEntry[1].Amount;
-               AutoFormatType=1 }
-
-    { 1010;3   ;Column  ;TotalCheck          ;
-               IncludeCaption=No;
-               SourceExpr=CustFilterCheck }
-
-    { 1011;3   ;Column  ;GrandTotalCLE1AmtLCY;
-               IncludeCaption=No;
-               SourceExpr=GrandTotalCustLedgEntry[1]."Amount (LCY)";
-               AutoFormatType=1 }
-
-    { 1021;3   ;Column  ;GrandTotalCLE5PctRemAmtLCY;
-               IncludeCaption=No;
-               SourceExpr=Pct(GrandTotalCustLedgEntry[5]."Remaining Amt. (LCY)",GrandTotalCustLedgEntry[1]."Amount (LCY)") }
-
-    { 1019;3   ;Column  ;GrandTotalCLE3PctRemAmtLCY;
-               IncludeCaption=No;
-               SourceExpr=Pct(GrandTotalCustLedgEntry[3]."Remaining Amt. (LCY)",GrandTotalCustLedgEntry[1]."Amount (LCY)") }
-
-    { 1018;3   ;Column  ;GrandTotalCLE2PctRemAmtLCY;
-               IncludeCaption=No;
-               SourceExpr=Pct(GrandTotalCustLedgEntry[2]."Remaining Amt. (LCY)",GrandTotalCustLedgEntry[1]."Amount (LCY)") }
-
-    { 1017;3   ;Column  ;GrandTotalCLE1PctRemAmtLCY;
-               IncludeCaption=No;
-               SourceExpr=Pct(GrandTotalCustLedgEntry[1]."Remaining Amt. (LCY)",GrandTotalCustLedgEntry[1]."Amount (LCY)") }
-
-    { 1016;3   ;Column  ;GrandTotalCLE5RemAmtLCY;
-               IncludeCaption=No;
-               SourceExpr=GrandTotalCustLedgEntry[5]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 1015;3   ;Column  ;GrandTotalCLE4RemAmtLCY;
-               IncludeCaption=No;
-               SourceExpr=GrandTotalCustLedgEntry[4]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 1014;3   ;Column  ;GrandTotalCLE3RemAmtLCY;
-               IncludeCaption=No;
-               SourceExpr=GrandTotalCustLedgEntry[3]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 1013;3   ;Column  ;GrandTotalCLE2RemAmtLCY;
-               IncludeCaption=No;
-               SourceExpr=GrandTotalCustLedgEntry[2]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 1012;3   ;Column  ;GrandTotalCLE1RemAmtLCY;
-               IncludeCaption=No;
-               SourceExpr=GrandTotalCustLedgEntry[1]."Remaining Amt. (LCY)";
-               AutoFormatType=1 }
-
-    { 8052;    ;DataItem;CurrencyTotals      ;
-               DataItemTable=Table2000000026;
-               DataItemTableView=SORTING(Number)
-                                 WHERE(Number=FILTER(1..));
-               OnAfterGetRecord=BEGIN
-                                  IF Number = 1 THEN BEGIN
-                                    IF NOT TempCurrency2.FINDSET(FALSE,FALSE) THEN
-                                      CurrReport.BREAK;
-                                  END ELSE
-                                    IF TempCurrency2.NEXT = 0 THEN
-                                      CurrReport.BREAK;
-                                  CLEAR(AgedCustLedgEntry);
-                                  TempCurrencyAmount.SETRANGE("Currency Code",TempCurrency2.Code);
-                                  IF TempCurrencyAmount.FINDSET(FALSE,FALSE) THEN
-                                    REPEAT
-                                      IF TempCurrencyAmount.Date <> DMY2DATE(31,12,9999) THEN
-                                        AgedCustLedgEntry[GetPeriodIndex(TempCurrencyAmount.Date)]."Remaining Amount" :=
-                                          TempCurrencyAmount.Amount
-                                      ELSE
-                                        AgedCustLedgEntry[6]."Remaining Amount" := TempCurrencyAmount.Amount;
-                                    UNTIL TempCurrencyAmount.NEXT = 0;
+                                  IF NOT PrintAmountInLCY THEN
+                                    UpdateCurrencyTotals(AccountsReceivblBuffer);
                                 END;
                                  }
 
-    { 132 ;1   ;Column  ;CurrNo              ;
-               IncludeCaption=No;
-               SourceExpr=Number = 1 }
+    { 70220;   ;DataItem;AccountsReceivblBuffer;
+               DataItemTable=Table70220;
+               DataItemTableView=SORTING(Customer to Currency Groupping);
+               Temporary=Yes }
 
-    { 117 ;1   ;Column  ;TempCurrCode        ;
-               IncludeCaption=No;
-               SourceExpr=TempCurrency2.Code;
-               AutoFormatType=1;
-               AutoFormatExpr=CurrencyCode }
-
-    { 119 ;1   ;Column  ;AgedCLE6RemAmt      ;
-               IncludeCaption=No;
-               SourceExpr=AgedCustLedgEntry[6]."Remaining Amount";
-               AutoFormatType=1;
-               AutoFormatExpr=CurrencyCode }
-
-    { 120 ;1   ;Column  ;AgedCLE1RemAmt      ;
-               IncludeCaption=No;
-               SourceExpr=AgedCustLedgEntry[1]."Remaining Amount";
-               AutoFormatType=1;
-               AutoFormatExpr=CurrencyCode }
-
-    { 121 ;1   ;Column  ;AgedCLE2RemAmt      ;
-               IncludeCaption=No;
-               SourceExpr=AgedCustLedgEntry[2]."Remaining Amount";
-               AutoFormatType=1;
-               AutoFormatExpr=CurrencyCode }
-
-    { 122 ;1   ;Column  ;AgedCLE3RemAmt      ;
-               IncludeCaption=No;
-               SourceExpr=AgedCustLedgEntry[3]."Remaining Amount";
-               AutoFormatType=1;
-               AutoFormatExpr=CurrencyCode }
-
-    { 123 ;1   ;Column  ;AgedCLE4RemAmt      ;
-               IncludeCaption=No;
-               SourceExpr=AgedCustLedgEntry[4]."Remaining Amount";
-               AutoFormatType=1;
-               AutoFormatExpr=CurrencyCode }
-
-    { 124 ;1   ;Column  ;AgedCLE5RemAmt      ;
-               IncludeCaption=No;
-               SourceExpr=AgedCustLedgEntry[5]."Remaining Amount";
-               AutoFormatType=1;
-               AutoFormatExpr=CurrencyCode }
+    { 1000000000;;DataItem;CurrencyTotalsBuffer;
+               DataItemTable=Table70220;
+               DataItemTableView=SORTING(Entry No.);
+               Temporary=Yes }
 
   }
   REQUESTPAGE
@@ -722,15 +408,9 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
     VAR
       GLSetup@1011 : Record 98;
       TempCustLedgEntry@1009 : TEMPORARY Record 21;
-      CustLedgEntryEndingDate@1013 : Record 21;
-      TotalCustLedgEntry@1014 : ARRAY [5] OF Record 21;
-      GrandTotalCustLedgEntry@1018 : ARRAY [5] OF Record 21;
       AgedCustLedgEntry@1022 : ARRAY [6] OF Record 21;
       TempCurrency@1010 : TEMPORARY Record 4;
-      TempCurrency2@1030 : TEMPORARY Record 4;
-      TempCurrencyAmount@1029 : TEMPORARY Record 264;
       DetailedCustomerLedgerEntry@1102601000 : Record 379;
-      CustFilter@1000 : Text;
       PrintAmountInLCY@1012 : Boolean;
       EndingDate@1001 : Date;
       AgingBy@1002 : 'Due Date,Posting Date,Document Date';
@@ -753,24 +433,11 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
       NumberOfCurrencies@1028 : Integer;
       Text009@1031 : TextConst 'ENU=Due Date,Posting Date,Document Date';
       Text010@1032 : TextConst 'ENU=The Date Formula %1 cannot be used. Try to restate it. E.g. 1M+CM instead of CM+1M.';
-      PageGroupNo@1035 : Integer;
-      NextPageGroupNo@1036 : Integer;
-      CustFilterCheck@1037 : Boolean;
+      LCYCurrency@1000000000 : Boolean;
       Text032@1059 : TextConst '@@@=Negating the period length: %1 is the period length;ENU=-%1';
-      AgedAccReceivableCptnLbl@5173 : TextConst 'ENU=Aged Accounts Receivable';
-      CurrReportPageNoCptnLbl@6074 : TextConst 'ENU=Page';
-      AllAmtinLCYCptnLbl@8265 : TextConst 'ENU=All Amounts in LCY';
       AgedOverdueAmtCptnLbl@2837 : TextConst 'ENU=Aged Overdue Amounts';
-      CLEEndDateAmtLCYCptnLbl@3633 : TextConst 'ENU="Original Amount "';
-      CLEEndDateDueDateCptnLbl@1514 : TextConst 'ENU=Due Date';
-      CLEEndDateDocNoCptnLbl@1511 : TextConst 'ENU=Document No.';
-      CLEEndDatePstngDateCptnLbl@4115 : TextConst 'ENU=Posting Date';
-      CLEEndDateDocTypeCptnLbl@7645 : TextConst 'ENU=Document Type';
-      OriginalAmtCptnLbl@4991 : TextConst 'ENU=Currency Code';
-      TotalLCYCptnLbl@4055 : TextConst 'ENU=Total (LCY)';
-      CurrSpecificationCptnLbl@3382 : TextConst 'ENU=Currency Specification';
-      ReportForNav@5000 : DotNet "'ForNav.Reports.2.0.0.1259, Version=2.0.0.1259, Culture=neutral, PublicKeyToken=5284c1af2984feb0'.ForNav.Report" WITHEVENTS;
-      ReportForNavClient@5003 : DotNet "'ForNav.Reports.2.0.0.1259, Version=2.0.0.1259, Culture=neutral, PublicKeyToken=5284c1af2984feb0'.ForNav.Report" RUNONCLIENT;
+      ReportForNav@5000 : DotNet "'ForNav.Reports.2.0.0.1260, Version=2.0.0.1260, Culture=neutral, PublicKeyToken=5284c1af2984feb0'.ForNav.Report" WITHEVENTS;
+      ReportForNavClient@5003 : DotNet "'ForNav.Reports.2.0.0.1260, Version=2.0.0.1260, Culture=neutral, PublicKeyToken=5284c1af2984feb0'.ForNav.Report" RUNONCLIENT;
       ReportForNavDialog@5001 : Dialog;
       ReportForNavOpenDesigner@5002 : Boolean;
       ReportForNavAllowDesign@5004 : Boolean INDATASET;
@@ -832,7 +499,6 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
         INSERT;
         IF PrintAmountInLCY THEN BEGIN
           CLEAR(TempCurrency);
-          TempCurrency."Amount Rounding Precision" := GLSetup."Amount Rounding Precision";
           IF TempCurrency.INSERT THEN;
           EXIT;
         END;
@@ -846,7 +512,6 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
           Currency.GET("Currency Code")
         ELSE BEGIN
           CLEAR(Currency);
-          Currency."Amount Rounding Precision" := GLSetup."Amount Rounding Precision";
         END;
         TempCurrency := Currency;
         TempCurrency.INSERT;
@@ -862,43 +527,36 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
           EXIT(i);
     END;
 
-    LOCAL PROCEDURE Pct@2(a@1000 : Decimal;b@1001 : Decimal) : Text[30];
-    BEGIN
-      IF b <> 0 THEN
-        EXIT(FORMAT(ROUND(100 * a / b,0.1),0,'<Sign><Integer><Decimals,2>') + '%');
-    END;
-
-    LOCAL PROCEDURE UpdateCurrencyTotals@7();
+    LOCAL PROCEDURE UpdateCurrencyTotals@7(VAR ForNAVAccountsReceivbBufferParam@1000000000 : TEMPORARY Record 70220);
     VAR
       i@1000 : Integer;
     BEGIN
-      TempCurrency2.Code := CurrencyCode;
-      IF TempCurrency2.INSERT THEN;
-      WITH TempCurrencyAmount DO BEGIN
-        FOR i := 1 TO ARRAYLEN(TotalCustLedgEntry) DO BEGIN
-          "Currency Code" := CurrencyCode;
-          Date := PeriodStartDate[i];
-          IF FIND THEN BEGIN
-            Amount := Amount + TotalCustLedgEntry[i]."Remaining Amount";
-            MODIFY;
-          END ELSE BEGIN
-            "Currency Code" := CurrencyCode;
-            Date := PeriodStartDate[i];
-            Amount := TotalCustLedgEntry[i]."Remaining Amount";
-            INSERT;
-          END;
-        END;
-        "Currency Code" := CurrencyCode;
-        Date := DMY2DATE(31,12,9999);
-        IF FIND THEN BEGIN
-          Amount := Amount + TotalCustLedgEntry[1].Amount;
-          MODIFY;
-        END ELSE BEGIN
-          "Currency Code" := CurrencyCode;
-          Date := DMY2DATE(31,12,9999);
-          Amount := TotalCustLedgEntry[1].Amount;
-          INSERT;
-        END;
+      CurrencyTotalsBuffer.RESET;
+      CurrencyTotalsBuffer.SETRANGE("Currency Code", ForNAVAccountsReceivbBufferParam."Currency Code");
+      IF NOT CurrencyTotalsBuffer.FINDFIRST THEN BEGIN
+        IF LCYCurrency THEN
+          CurrencyTotalsBuffer."Entry No." := 0
+        ELSE
+          CurrencyTotalsBuffer."Entry No." := CalcCurrencyEntryNo(ForNAVAccountsReceivbBufferParam."Currency Code");
+        CurrencyTotalsBuffer.Type := CurrencyTotalsBuffer.Type::CurrencyTotals;
+        CurrencyTotalsBuffer."Currency Code" := ForNAVAccountsReceivbBufferParam."Currency Code";
+        CurrencyTotalsBuffer.Amount := ForNAVAccountsReceivbBufferParam.Amount;
+        CurrencyTotalsBuffer.Balance := ForNAVAccountsReceivbBufferParam.Balance;
+        CurrencyTotalsBuffer."Amount - Interval 1" := ForNAVAccountsReceivbBufferParam."Amount - Interval 1";
+        CurrencyTotalsBuffer."Amount - Interval 2" := ForNAVAccountsReceivbBufferParam."Amount - Interval 2";
+        CurrencyTotalsBuffer."Amount - Interval 3" := ForNAVAccountsReceivbBufferParam."Amount - Interval 3";
+        CurrencyTotalsBuffer."Amount - Interval 4" := ForNAVAccountsReceivbBufferParam."Amount - Interval 4";
+        CurrencyTotalsBuffer."Amount - Interval 5" := ForNAVAccountsReceivbBufferParam."Amount - Interval 5";
+        CurrencyTotalsBuffer.INSERT;
+      END ELSE BEGIN
+        CurrencyTotalsBuffer.Amount += ForNAVAccountsReceivbBufferParam.Amount;
+        CurrencyTotalsBuffer.Balance += ForNAVAccountsReceivbBufferParam.Balance;
+        CurrencyTotalsBuffer."Amount - Interval 1" += ForNAVAccountsReceivbBufferParam."Amount - Interval 1";
+        CurrencyTotalsBuffer."Amount - Interval 2" += ForNAVAccountsReceivbBufferParam."Amount - Interval 2";
+        CurrencyTotalsBuffer."Amount - Interval 3" += ForNAVAccountsReceivbBufferParam."Amount - Interval 3";
+        CurrencyTotalsBuffer."Amount - Interval 4" += ForNAVAccountsReceivbBufferParam."Amount - Interval 4";
+        CurrencyTotalsBuffer."Amount - Interval 5" += ForNAVAccountsReceivbBufferParam."Amount - Interval 5";
+        CurrencyTotalsBuffer.MODIFY;
       END;
     END;
 
@@ -911,6 +569,14 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
       PrintDetails := NewPrintDetails;
       HeadingType := NewHeadingType;
       NewPagePercustomer := NewPagePercust;
+    END;
+
+    LOCAL PROCEDURE CalcCurrencyEntryNo@1000000000(CurrencyCode@1000000000 : Code[10]) : Integer;
+    VAR
+      Currency@1000000001 : Record 4;
+    BEGIN
+      Currency.SETFILTER(Code,'..%1',CurrencyCode);
+      EXIT(Currency.COUNT);
     END;
 
     EVENT ReportForNav@5000::OnInit@5002();
@@ -999,11 +665,11 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
       PdfFile.CLOSE;
     END;
 
-    EVENT ReportForNav@5000::OnPreSection@5012(DataItemId@1000 : Text;SectionId@1001 : Text);
+    EVENT ReportForNav@5000::OnPreSection@5012(DataItemId@1000000000 : Text;SectionId@1000000001 : Text);
     BEGIN
     END;
 
-    EVENT ReportForNav@5000::OnPostSection@50013(DataItemId@1000 : Text;SectionId@1001 : Text);
+    EVENT ReportForNav@5000::OnPostSection@50013(DataItemId@1000000000 : Text;SectionId@1000000001 : Text);
     BEGIN
     END;
 
@@ -1043,9 +709,9 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
       ReportForNav.PrinterSettings.PageSettings := ReportForNavClient.SelectPrinter(ReportForNav.PrinterSettings.PrinterName,ReportForNav.PrinterSettings.ShowPrinterDialog,ReportForNav.PrinterSettings.PageSettings);
     END;
 
-    EVENT ReportForNav@5000::OnPrint@5005(InStream@1000 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Stream");
+    EVENT ReportForNav@5000::OnPrint@5005(InStream@1000000000 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Stream");
     VAR
-      ClientFileName@1001 : Text[255];
+      ClientFileName@1000000001 : Text[255];
     BEGIN
       DOWNLOADFROMSTREAM(InStream, '', '<TEMP>', '', ClientFileName);
       ReportForNavClient.Print(ClientFileName);
@@ -1060,17 +726,17 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
       END;
     END;
 
-    EVENT ReportForNav@5000::OnView@5008(ClientFileName@1000 : Text;Parameters@1001 : Text;ServerFileName@1002 : Text);
+    EVENT ReportForNav@5000::OnView@5008(ClientFileName@1000000000 : Text;Parameters@1000000001 : Text;ServerFileName@1000000002 : Text);
     VAR
-      ServerFile@1003 : File;
-      ServerInStream@1004 : InStream;
+      ServerFile@1000000003 : File;
+      ServerInStream@1000000004 : InStream;
     BEGIN
       ServerFile.OPEN(ServerFileName);
       ServerFile.CREATEINSTREAM(ServerInStream);
       DOWNLOADFROMSTREAM(ServerInStream,'','','',ClientFileName);
     END;
 
-    EVENT ReportForNav@5000::OnMessage@5009(Operation@1000 : Text;Parameter@1001 : Text;ParameterNo@1002 : Integer);
+    EVENT ReportForNav@5000::OnMessage@5009(Operation@1000000000 : Text;Parameter@1000000001 : Text;ParameterNo@1000000002 : Integer);
     BEGIN
       CASE Operation OF
         'Open'    : ReportForNavDialog.OPEN(Parameter);
@@ -1081,9 +747,9 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
       END;
     END;
 
-    EVENT ReportForNav@5000::OnPrintPreview@5011(InStream@1000 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Stream";Preview@1001 : Boolean);
+    EVENT ReportForNav@5000::OnPrintPreview@5011(InStream@1000000000 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Stream";Preview@1000000001 : Boolean);
     VAR
-      ClientFileName@1002 : Text[255];
+      ClientFileName@1000000002 : Text[255];
     BEGIN
       CurrReport.LANGUAGE := SYSTEM.GLOBALLANGUAGE;
       DOWNLOADFROMSTREAM(InStream, '', '<TEMP>', '', ClientFileName);
@@ -1093,14 +759,80 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
       END;
     END;
 
+    EVENT ReportForNav@5000::OnTotals@5004(DataItemId@1000000000 : Text;Operation@1000000001 : Text;GroupTotalFieldNo@1000000002 : Integer);
+    VAR
+      CurrRecRef@1000000003 : RecordRef;
+      NextRecRef@1000000004 : RecordRef;
+      CurrKeyRef@1000000005 : KeyRef;
+      NextKeyRef@1000000006 : KeyRef;
+      FieldIndex@1000000007 : Integer;
+      GroupFieldIndex@1000000008 : Integer;
     BEGIN
+      // Do not change (Autogenerated by Reports ForNAV) - Instead change the Create Totals, Total Fields or Group Total Fields properties on the Data item in the ForNAV designer
+      CASE DataItemId OF
+        'AccountsReceivblBuffer': WITH AccountsReceivblBuffer DO CASE Operation OF
+           'Add': BEGIN
+                ReportForNav.AddTotal(DataItemId,0,"Amount - Interval 1");
+                ReportForNav.AddTotal(DataItemId,1,"Amount - Interval 1 (LCY)");
+                ReportForNav.AddTotal(DataItemId,2,"Amount - Interval 2");
+                ReportForNav.AddTotal(DataItemId,3,"Amount - Interval 2 (LCY)");
+                ReportForNav.AddTotal(DataItemId,4,"Amount - Interval 3");
+                ReportForNav.AddTotal(DataItemId,5,"Amount - Interval 3 (LCY)");
+                ReportForNav.AddTotal(DataItemId,6,"Amount - Interval 4");
+                ReportForNav.AddTotal(DataItemId,7,"Amount - Interval 4 (LCY)");
+                ReportForNav.AddTotal(DataItemId,8,"Amount - Interval 5");
+                ReportForNav.AddTotal(DataItemId,9,"Amount - Interval 5 (LCY)");
+                ReportForNav.AddTotal(DataItemId,10,"Amount (LCY)");
+                ReportForNav.AddTotal(DataItemId,11,Balance);
+                ReportForNav.AddTotal(DataItemId,12,"Balance (LCY)");
+                ReportForNav.AddTotal(DataItemId,13,Amount);
+                ReportForNav.AddTotal(DataItemId,14,Balance);
+                ReportForNav.AddTotal(DataItemId,15,"Amount - Interval 1");
+                ReportForNav.AddTotal(DataItemId,16,"Amount - Interval 2");
+                ReportForNav.AddTotal(DataItemId,17,"Amount - Interval 3");
+                ReportForNav.AddTotal(DataItemId,18,"Amount - Interval 4");
+                ReportForNav.AddTotal(DataItemId,19,"Amount - Interval 5");
+              END;
+           'Restore': BEGIN
+                 "Amount - Interval 1" := ReportForNav.RestoreTotal(DataItemId,0,GroupTotalFieldNo);
+                 "Amount - Interval 1 (LCY)" := ReportForNav.RestoreTotal(DataItemId,1,GroupTotalFieldNo);
+                 "Amount - Interval 2" := ReportForNav.RestoreTotal(DataItemId,2,GroupTotalFieldNo);
+                 "Amount - Interval 2 (LCY)" := ReportForNav.RestoreTotal(DataItemId,3,GroupTotalFieldNo);
+                 "Amount - Interval 3" := ReportForNav.RestoreTotal(DataItemId,4,GroupTotalFieldNo);
+                 "Amount - Interval 3 (LCY)" := ReportForNav.RestoreTotal(DataItemId,5,GroupTotalFieldNo);
+                 "Amount - Interval 4" := ReportForNav.RestoreTotal(DataItemId,6,GroupTotalFieldNo);
+                 "Amount - Interval 4 (LCY)" := ReportForNav.RestoreTotal(DataItemId,7,GroupTotalFieldNo);
+                 "Amount - Interval 5" := ReportForNav.RestoreTotal(DataItemId,8,GroupTotalFieldNo);
+                 "Amount - Interval 5 (LCY)" := ReportForNav.RestoreTotal(DataItemId,9,GroupTotalFieldNo);
+                 "Amount (LCY)" := ReportForNav.RestoreTotal(DataItemId,10,GroupTotalFieldNo);
+                 Balance := ReportForNav.RestoreTotal(DataItemId,11,GroupTotalFieldNo);
+                 "Balance (LCY)" := ReportForNav.RestoreTotal(DataItemId,12,GroupTotalFieldNo);
+                 Amount := ReportForNav.RestoreTotal(DataItemId,13,GroupTotalFieldNo);
+                 Balance := ReportForNav.RestoreTotal(DataItemId,14,GroupTotalFieldNo);
+                 "Amount - Interval 1" := ReportForNav.RestoreTotal(DataItemId,15,GroupTotalFieldNo);
+                 "Amount - Interval 2" := ReportForNav.RestoreTotal(DataItemId,16,GroupTotalFieldNo);
+                 "Amount - Interval 3" := ReportForNav.RestoreTotal(DataItemId,17,GroupTotalFieldNo);
+                 "Amount - Interval 4" := ReportForNav.RestoreTotal(DataItemId,18,GroupTotalFieldNo);
+                 "Amount - Interval 5" := ReportForNav.RestoreTotal(DataItemId,19,GroupTotalFieldNo);
+              END;
+        END;
+      END;
+    END;
+
+    BEGIN
+    {
+      Copyright (c) 2017 ForNAV ApS - All Rights Reserved
+      The intellectual work and technical concepts contained in this file are proprietary to ForNAV.
+      Unauthorized reverse engineering, distribution or copying of this file, parts hereof, or derived work, via any medium is strictly prohibited without written permission from ForNAV ApS.
+      This source code is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    }
     END.
   }
   RDLDATA
   {
     <?xml version="1.0" encoding="utf-8"?>
 <Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
-  <Description>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</Description>
+  <Description>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</Description>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
     <DataSource Name="DataSource">
@@ -1109,7 +841,7 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
         <ConnectString />
       </ConnectionProperties>
       <rd:SecurityType>None</rd:SecurityType>
-      <rd:DataSourceID>e45d222d-81d0-443c-aa00-62a784c684aa</rd:DataSourceID>
+      <rd:DataSourceID>c4820e68-dd09-4fe6-8c7e-ac9b7433a0c7</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <ReportSections>
@@ -1125,7 +857,7 @@ OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
     </ReportSection>
   </ReportSections>
   <rd:ReportUnitType>Invalid</rd:ReportUnitType>
-  <rd:ReportID>49fd9418-41fc-42a6-b940-e1e3562c82a7</rd:ReportID>
+  <rd:ReportID>2ef6a1c8-961b-4a95-8626-3d616e0ec239</rd:ReportID>
 </Report>
     END_OF_RDLDATA
   }

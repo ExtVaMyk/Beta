@@ -1,0 +1,64 @@
+OBJECT Table 70220 ForNAV Accounts Receivb.Buffer
+{
+  OBJECT-PROPERTIES
+  {
+    Date=17-08-01;
+    Time=14:48:49;
+    Modified=Yes;
+    Version List=VAM1,FORNAVCTP;
+  }
+  PROPERTIES
+  {
+  }
+  FIELDS
+  {
+    { 10  ;   ;Entry No.           ;Integer       ;CaptionML=ENU=Entry No. }
+    { 20  ;   ;Type                ;Option        ;CaptionML=ENU=Type;
+                                                   OptionCaptionML=ENU=Customer Entry,CustomerTotals,Grand Totals (LCY), Currency Totals Entry;
+                                                   OptionString=CustomerEntry,CustomerTotals,GrandTotalsLCY,CurrencyTotals }
+    { 30  ;   ;Customer No.        ;Code20        ;TableRelation=Customer;
+                                                   ValidateTableRelation=No;
+                                                   TestTableRelation=No;
+                                                   CaptionML=ENU=Customer No. }
+    { 40  ;   ;Currency Code       ;Code10        ;CaptionML=ENU=Currency Code }
+    { 45  ;   ;Customer to Currency Groupping;Code31;
+                                                   CaptionML=ENU=Customer to Currency Groupping }
+    { 50  ;   ;Document Type       ;Option        ;CaptionML=ENU=Document Type;
+                                                   OptionCaptionML=ENU=" ,Payment,Invoice,Credit Memo,Finance Charge Memo,Reminder,Refund";
+                                                   OptionString=[ ,Payment,Invoice,Credit Memo,Finance Charge Memo,Reminder,Refund] }
+    { 60  ;   ;Document No.        ;Code20        ;CaptionML=ENU=Document No. }
+    { 65  ;   ;Document Date       ;Date          ;CaptionML=ENU=Document Date }
+    { 70  ;   ;Posting Date        ;Date          ;CaptionML=ENU=Posting Date }
+    { 80  ;   ;Due Date            ;Date          ;CaptionML=ENU=Due Date }
+    { 90  ;   ;Amount              ;Decimal       ;CaptionML=ENU=Amount }
+    { 95  ;   ;Amount (LCY)        ;Decimal       ;CaptionML=ENU=Amount (LCY) }
+    { 100 ;   ;Balance             ;Decimal       ;CaptionML=ENU=Balance }
+    { 105 ;   ;Balance (LCY)       ;Decimal       ;CaptionML=ENU=Balance (LCY) }
+    { 110 ;   ;Amount - Interval 1 ;Decimal       ;CaptionML=ENU=Amount - Interval 1 }
+    { 115 ;   ;Amount - Interval 1 (LCY);Decimal  ;CaptionML=ENU=Amount - Interval 1 (LCY) }
+    { 120 ;   ;Amount - Interval 2 ;Decimal       ;CaptionML=ENU=Amount - Interval 2 }
+    { 125 ;   ;Amount - Interval 2 (LCY);Decimal  ;CaptionML=ENU=Amount - Interval 2 (LCY) }
+    { 130 ;   ;Amount - Interval 3 ;Decimal       ;CaptionML=ENU=Amount - Interval 3 }
+    { 135 ;   ;Amount - Interval 3 (LCY);Decimal  ;CaptionML=ENU=Amount - Interval 3 (LCY) }
+    { 140 ;   ;Amount - Interval 4 ;Decimal       ;CaptionML=ENU=Amount - Interval 4 }
+    { 145 ;   ;Amount - Interval 4 (LCY);Decimal  ;CaptionML=ENU=Amount - Interval 4 (LCY) }
+    { 150 ;   ;Amount - Interval 5 ;Decimal       ;CaptionML=ENU=Amount - Interval 5 }
+    { 155 ;   ;Amount - Interval 5 (LCY);Decimal  ;CaptionML=ENU=Amount - Interval 5 (LCY) }
+    { 160 ;   ;New Page            ;Boolean       ;CaptionML=ENU=New Page }
+  }
+  KEYS
+  {
+    {    ;Entry No.                               ;Clustered=Yes }
+    {    ;Customer to Currency Groupping           }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+
