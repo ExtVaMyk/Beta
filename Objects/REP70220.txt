@@ -1,0 +1,865 @@
+OBJECT Report 70220 ForNAV Aged Accounts Receivbl.
+{
+  OBJECT-PROPERTIES
+  {
+    Date=17-08-01;
+    Time=18:07:32;
+    Modified=Yes;
+    Version List=VAM1,FORNAV2.0.0.1260/1260;
+  }
+  PROPERTIES
+  {
+    CaptionML=ENU=Aged Accounts Receivable;
+    OnInitReport=BEGIN
+                   ;ReportForNav:= ReportForNav.Report(CurrReport.OBJECTID,CurrReport.LANGUAGE,SERIALNUMBER,USERID,COMPANYNAME);ReportForNav.Init;
+                 END;
+
+    OnPreReport=VAR
+                  CaptionManagement@1000 : Codeunit 42;
+                BEGIN
+                  GLSetup.GET;
+                  CalcDates;
+                  CreateHeadings;
+                  ;ReportForNav.OpenDesigner:=ReportForNavOpenDesigner;IF NOT ReportForNav.Pre THEN CurrReport.QUIT;
+                END;
+
+    OnPostReport=BEGIN
+                   ;ReportForNav.Post;
+                 END;
+
+  }
+  DATASET
+  {
+    { 6836;    ;DataItem;Customer            ;
+               DataItemTable=Table18;
+               OnAfterGetRecord=BEGIN
+                                  TempCurrency.RESET;
+                                  TempCurrency.DELETEALL;
+                                  TempCustLedgEntry.RESET;
+                                  TempCustLedgEntry.DELETEALL;
+                                END;
+
+               ReqFilterFields=No. }
+
+    { 108 ;1   ;Column  ;FormatEndingDate    ;
+               IncludeCaption=No;
+               SourceExpr=STRSUBSTNO(Text006,FORMAT(EndingDate,0,4)) }
+
+    { 110 ;1   ;Column  ;PostingDate         ;
+               IncludeCaption=No;
+               SourceExpr=STRSUBSTNO(Text007,SELECTSTR(AgingBy + 1,Text009)) }
+
+    { 128 ;1   ;Column  ;PrintAmountInLCY    ;
+               IncludeCaption=No;
+               SourceExpr=PrintAmountInLCY }
+
+    { 130 ;1   ;Column  ;AgingByDueDate      ;
+               IncludeCaption=No;
+               SourceExpr=AgingBy = AgingBy::"Due Date" }
+
+    { 1   ;1   ;Column  ;AgedOverdueAmtCptn  ;
+               IncludeCaption=No;
+               SourceExpr=AgedOverdueAmtCptnLbl }
+
+    { 131 ;1   ;Column  ;PrintDetails        ;
+               IncludeCaption=No;
+               SourceExpr=PrintDetails }
+
+    { 2   ;1   ;Column  ;HeaderText1         ;
+               IncludeCaption=No;
+               SourceExpr=HeaderText[1] }
+
+    { 3   ;1   ;Column  ;HeaderText2         ;
+               IncludeCaption=No;
+               SourceExpr=HeaderText[2] }
+
+    { 4   ;1   ;Column  ;HeaderText3         ;
+               IncludeCaption=No;
+               SourceExpr=HeaderText[3] }
+
+    { 6   ;1   ;Column  ;HeaderText4         ;
+               IncludeCaption=No;
+               SourceExpr=HeaderText[4] }
+
+    { 8   ;1   ;Column  ;HeaderText5         ;
+               IncludeCaption=No;
+               SourceExpr=HeaderText[5] }
+
+    { 8503;1   ;DataItem;                    ;
+               DataItemTable=Table21;
+               DataItemTableView=SORTING(Customer No.,Posting Date,Currency Code);
+               OnPreDataItem=BEGIN
+                               SETRANGE("Posting Date",EndingDate + 1,DMY2DATE(31,12,9999));
+                             END;
+
+               OnAfterGetRecord=VAR
+                                  CustLedgEntry@1000 : Record 21;
+                                BEGIN
+                                  CustLedgEntry.SETCURRENTKEY("Closed by Entry No.");
+                                  CustLedgEntry.SETRANGE("Closed by Entry No.","Entry No.");
+                                  CustLedgEntry.SETRANGE("Posting Date",0D,EndingDate);
+                                  IF CustLedgEntry.FINDSET(FALSE,FALSE) THEN
+                                    REPEAT
+                                      InsertTemp(CustLedgEntry);
+                                    UNTIL CustLedgEntry.NEXT = 0;
+                                  IF "Closed by Entry No." <> 0 THEN BEGIN
+                                    CustLedgEntry.SETRANGE("Closed by Entry No.","Closed by Entry No.");
+                                    IF CustLedgEntry.FINDSET(FALSE,FALSE) THEN
+                                      REPEAT
+                                        InsertTemp(CustLedgEntry);
+                                      UNTIL CustLedgEntry.NEXT = 0;
+                                  END;
+                                  CustLedgEntry.RESET;
+                                  CustLedgEntry.SETRANGE("Entry No.","Closed by Entry No.");
+                                  CustLedgEntry.SETRANGE("Posting Date",0D,EndingDate);
+                                  IF CustLedgEntry.FINDSET(FALSE,FALSE) THEN
+                                    REPEAT
+                                      InsertTemp(CustLedgEntry);
+                                    UNTIL CustLedgEntry.NEXT = 0;
+                                  CurrReport.SKIP;
+                                END;
+
+               DataItemLink=Customer No.=FIELD(No.) }
+
+    { 1473;1   ;DataItem;OpenCustLedgEntry   ;
+               DataItemTable=Table21;
+               DataItemTableView=SORTING(Customer No.,Open,Positive,Due Date,Currency Code);
+               OnPreDataItem=BEGIN
+                               IF AgingBy = AgingBy::"Posting Date" THEN BEGIN
+                                 SETRANGE("Posting Date",0D,EndingDate);
+                                 SETRANGE("Date Filter",0D,EndingDate);
+                               END;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  IF AgingBy = AgingBy::"Posting Date" THEN BEGIN
+                                    CALCFIELDS("Remaining Amt. (LCY)");
+                                    IF "Remaining Amt. (LCY)" = 0 THEN
+                                      CurrReport.SKIP;
+                                  END;
+                                  InsertTemp(OpenCustLedgEntry);
+                                  CurrReport.SKIP;
+                                END;
+
+               DataItemLink=Customer No.=FIELD(No.) }
+
+    { 6523;1   ;DataItem;CurrencyLoop        ;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number)
+                                 WHERE(Number=FILTER(1..));
+               PrintOnlyIfDetail=Yes;
+               OnPreDataItem=BEGIN
+                               NumberOfCurrencies := 0;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  LCYCurrency := FALSE;
+                                  IF Number = 1 THEN BEGIN
+                                    IF NOT TempCurrency.FINDSET(FALSE,FALSE) THEN
+                                      CurrReport.BREAK;
+                                  END ELSE
+                                    IF TempCurrency.NEXT = 0 THEN
+                                      CurrReport.BREAK;
+                                  IF TempCurrency.Code <> '' THEN
+                                    CurrencyCode := TempCurrency.Code
+                                  ELSE BEGIN
+                                    CurrencyCode := GLSetup."LCY Code";
+                                    LCYCurrency := TRUE;
+                                  END;
+                                  NumberOfCurrencies := NumberOfCurrencies + 1;
+                                END;
+                                 }
+
+    { 7725;2   ;DataItem;TempCustLedgEntryLoop;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number)
+                                 WHERE(Number=FILTER(1..));
+               OnPreDataItem=BEGIN
+                               IF NOT PrintAmountInLCY THEN BEGIN
+                                 IF (CurrencyCode = '') OR (CurrencyCode = GLSetup."LCY Code") THEN
+                                   TempCustLedgEntry.SETFILTER("Currency Code",'%1|%2',CurrencyCode,'')
+                                 ELSE
+                                   TempCustLedgEntry.SETRANGE("Currency Code",CurrencyCode);
+                               END;
+                             END;
+
+               OnAfterGetRecord=VAR
+                                  PeriodIndex@1001 : Integer;
+                                BEGIN
+                                  IF Number = 1 THEN BEGIN
+                                    IF NOT TempCustLedgEntry.FINDSET(FALSE,FALSE) THEN
+                                      CurrReport.BREAK;
+                                  END ELSE
+                                    IF TempCustLedgEntry.NEXT = 0 THEN
+                                      CurrReport.BREAK;
+
+                                  AccountsReceivblBuffer.INIT;
+                                  AccountsReceivblBuffer."Entry No." := TempCustLedgEntry."Entry No.";
+                                  AccountsReceivblBuffer.Type := AccountsReceivblBuffer.Type::CustomerEntry;
+                                  AccountsReceivblBuffer."Customer No." := TempCustLedgEntry."Customer No.";
+                                  AccountsReceivblBuffer."Currency Code" := CurrencyCode;
+                                  AccountsReceivblBuffer."Customer to Currency Groupping" := TempCustLedgEntry."Customer No." + ' ' + CurrencyCode;
+                                  AccountsReceivblBuffer."Document No." := TempCustLedgEntry."Document No.";
+                                  AccountsReceivblBuffer."Document Type" := TempCustLedgEntry."Document Type";
+                                  AccountsReceivblBuffer."Document Date" := TempCustLedgEntry."Document Date";
+                                  AccountsReceivblBuffer."Posting Date" := TempCustLedgEntry."Posting Date";
+                                  AccountsReceivblBuffer."Due Date" := TempCustLedgEntry."Due Date";
+                                  AccountsReceivblBuffer."New Page" := NewPagePercustomer;
+                                  DetailedCustomerLedgerEntry.SETRANGE("Cust. Ledger Entry No.",TempCustLedgEntry."Entry No.");
+                                  IF DetailedCustomerLedgerEntry.FINDSET(FALSE,FALSE) THEN
+                                    REPEAT
+                                      IF (DetailedCustomerLedgerEntry."Entry Type" =
+                                          DetailedCustomerLedgerEntry."Entry Type"::"Initial Entry") AND
+                                         (TempCustLedgEntry."Posting Date" > EndingDate) AND
+                                         (AgingBy <> AgingBy::"Posting Date")
+                                      THEN BEGIN
+                                        IF TempCustLedgEntry."Document Date" <= EndingDate THEN
+                                          DetailedCustomerLedgerEntry."Posting Date" :=
+                                            TempCustLedgEntry."Document Date"
+                                        ELSE
+                                          IF (TempCustLedgEntry."Due Date" <= EndingDate) AND
+                                             (AgingBy = AgingBy::"Due Date")
+                                          THEN
+                                            DetailedCustomerLedgerEntry."Posting Date" :=
+                                              TempCustLedgEntry."Due Date";
+                                      END;
+                                      IF (DetailedCustomerLedgerEntry."Posting Date" <= EndingDate) OR
+                                         (TempCustLedgEntry.Open AND
+                                          (AgingBy = AgingBy::"Due Date") AND
+                                          (TempCustLedgEntry."Due Date" > EndingDate) AND
+                                          (TempCustLedgEntry."Posting Date" <= EndingDate))
+                                      THEN BEGIN
+                                        IF DetailedCustomerLedgerEntry."Entry Type" IN
+                                           [DetailedCustomerLedgerEntry."Entry Type"::"Initial Entry",
+                                            DetailedCustomerLedgerEntry."Entry Type"::"Unrealized Loss",
+                                            DetailedCustomerLedgerEntry."Entry Type"::"Unrealized Gain",
+                                            DetailedCustomerLedgerEntry."Entry Type"::"Realized Loss",
+                                            DetailedCustomerLedgerEntry."Entry Type"::"Realized Gain",
+                                            DetailedCustomerLedgerEntry."Entry Type"::"Payment Discount",
+                                            DetailedCustomerLedgerEntry."Entry Type"::"Payment Discount (VAT Excl.)",
+                                            DetailedCustomerLedgerEntry."Entry Type"::"Payment Discount (VAT Adjustment)",
+                                            DetailedCustomerLedgerEntry."Entry Type"::"Payment Tolerance",
+                                            DetailedCustomerLedgerEntry."Entry Type"::"Payment Discount Tolerance",
+                                            DetailedCustomerLedgerEntry."Entry Type"::"Payment Tolerance (VAT Excl.)",
+                                            DetailedCustomerLedgerEntry."Entry Type"::"Payment Tolerance (VAT Adjustment)",
+                                            DetailedCustomerLedgerEntry."Entry Type"::"Payment Discount Tolerance (VAT Excl.)",
+                                            DetailedCustomerLedgerEntry."Entry Type"::"Payment Discount Tolerance (VAT Adjustment)"]
+                                        THEN BEGIN
+                                          IF PrintAmountInLCY THEN
+                                            AccountsReceivblBuffer.Amount += DetailedCustomerLedgerEntry."Amount (LCY)"
+                                          ELSE
+                                            AccountsReceivblBuffer.Amount += DetailedCustomerLedgerEntry.Amount;
+                                          AccountsReceivblBuffer."Amount (LCY)" += DetailedCustomerLedgerEntry."Amount (LCY)";
+                                        END;
+                                        IF DetailedCustomerLedgerEntry."Posting Date" <= EndingDate THEN BEGIN
+                                          IF PrintAmountInLCY THEN
+                                            AccountsReceivblBuffer.Balance += DetailedCustomerLedgerEntry."Amount (LCY)"
+                                          ELSE
+                                            AccountsReceivblBuffer.Balance += DetailedCustomerLedgerEntry.Amount;
+                                          AccountsReceivblBuffer."Balance (LCY)" += DetailedCustomerLedgerEntry."Amount (LCY)";
+                                        END;
+                                      END;
+                                    UNTIL DetailedCustomerLedgerEntry.NEXT = 0;
+
+                                  IF AccountsReceivblBuffer.Balance = 0 THEN
+                                    CurrReport.SKIP;
+                                  CASE AgingBy OF
+                                    AgingBy::"Due Date":
+                                      PeriodIndex := GetPeriodIndex(AccountsReceivblBuffer."Due Date");
+                                    AgingBy::"Posting Date":
+                                      PeriodIndex := GetPeriodIndex(AccountsReceivblBuffer."Posting Date");
+                                    AgingBy::"Document Date":
+                                      BEGIN
+                                        IF AccountsReceivblBuffer."Document Date" > EndingDate THEN BEGIN
+                                          AccountsReceivblBuffer.Balance := 0;
+                                          AccountsReceivblBuffer."Balance (LCY)" := 0;
+                                          AccountsReceivblBuffer."Document Date" := AccountsReceivblBuffer."Posting Date";
+                                        END;
+                                        PeriodIndex := GetPeriodIndex(AccountsReceivblBuffer."Document Date");
+                                      END;
+                                  END;
+
+                                  CASE PeriodIndex OF
+                                    1: BEGIN
+                                        AccountsReceivblBuffer."Amount - Interval 1" := AccountsReceivblBuffer.Balance;
+                                        AccountsReceivblBuffer."Amount - Interval 1 (LCY)" := AccountsReceivblBuffer."Balance (LCY)";
+                                       END;
+                                    2: BEGIN
+                                          AccountsReceivblBuffer."Amount - Interval 2" := AccountsReceivblBuffer.Balance;
+                                          AccountsReceivblBuffer."Amount - Interval 2 (LCY)" := AccountsReceivblBuffer."Balance (LCY)";
+                                         END;
+                                    3: BEGIN
+                                          AccountsReceivblBuffer."Amount - Interval 3" := AccountsReceivblBuffer.Balance;
+                                          AccountsReceivblBuffer."Amount - Interval 3 (LCY)" := AccountsReceivblBuffer."Balance (LCY)";
+                                         END;
+                                    4: BEGIN
+                                          AccountsReceivblBuffer."Amount - Interval 4" := AccountsReceivblBuffer.Balance;
+                                          AccountsReceivblBuffer."Amount - Interval 4 (LCY)" := AccountsReceivblBuffer."Balance (LCY)";
+                                         END;
+                                    5: BEGIN
+                                          AccountsReceivblBuffer."Amount - Interval 5" := AccountsReceivblBuffer.Balance;
+                                          AccountsReceivblBuffer."Amount - Interval 5 (LCY)" := AccountsReceivblBuffer."Balance (LCY)";
+                                         END;
+                                  END;
+                                  AccountsReceivblBuffer.INSERT;
+
+                                  IF NOT PrintAmountInLCY THEN
+                                    UpdateCurrencyTotals(AccountsReceivblBuffer);
+                                END;
+                                 }
+
+    { 70220;   ;DataItem;AccountsReceivblBuffer;
+               DataItemTable=Table70220;
+               DataItemTableView=SORTING(Customer to Currency Groupping);
+               Temporary=Yes }
+
+    { 1000000000;;DataItem;CurrencyTotalsBuffer;
+               DataItemTable=Table70220;
+               DataItemTableView=SORTING(Entry No.);
+               Temporary=Yes }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+      SaveValues=Yes;
+      OnOpenPage=BEGIN
+                   IF EndingDate = 0D THEN
+                     EndingDate := WORKDATE;
+                 END;
+
+    }
+    CONTROLS
+    {
+      { 4   ;0   ;Container ;
+                  ContainerType=ContentArea }
+
+      { 2   ;1   ;Group     ;
+                  CaptionML=ENU=Options }
+
+      { 1   ;2   ;Field     ;
+                  Name=AgedAsOf;
+                  CaptionML=ENU=Aged As Of;
+                  ToolTipML=ENU=Specifies the date that you want the aging calculated for.;
+                  ApplicationArea=#Basic,#Suite;
+                  SourceExpr=EndingDate }
+
+      { 3   ;2   ;Field     ;
+                  Name=Agingby;
+                  CaptionML=ENU=Aging by;
+                  ToolTipML=ENU=Specifies if the aging will be calculated from the due date, the posting date, or the document date.;
+                  OptionCaptionML=ENU=Due Date,Posting Date,Document Date;
+                  ApplicationArea=#Basic,#Suite;
+                  SourceExpr=AgingBy }
+
+      { 7   ;2   ;Field     ;
+                  Name=PeriodLength;
+                  CaptionML=ENU=Period Length;
+                  ToolTipML=ENU=Specifies the length of each period, for example, enter "1M" for one month.;
+                  ApplicationArea=#Basic,#Suite;
+                  SourceExpr=PeriodLength }
+
+      { 9   ;2   ;Field     ;
+                  Name=AmountsinLCY;
+                  CaptionML=ENU=Print Amounts in LCY;
+                  ToolTipML=ENU=Specifies if you want the report to specify the aging per customer ledger entry.;
+                  ApplicationArea=#Basic,#Suite;
+                  SourceExpr=PrintAmountInLCY }
+
+      { 11  ;2   ;Field     ;
+                  Name=PrintDetails;
+                  CaptionML=ENU=Print Details;
+                  ToolTipML=ENU=Specifies if you want the report to show the detailed entries that add up the total balance for each customer.;
+                  ApplicationArea=#Basic,#Suite;
+                  SourceExpr=PrintDetails }
+
+      { 15  ;2   ;Field     ;
+                  Name=HeadingType;
+                  CaptionML=ENU=Heading Type;
+                  ToolTipML=ENU=Specifies if the column heading for the three periods will indicate a date interval or the number of days overdue.;
+                  OptionCaptionML=ENU=Date Interval,Number of Days;
+                  ApplicationArea=#Basic,#Suite;
+                  SourceExpr=HeadingType }
+
+      { 13  ;2   ;Field     ;
+                  Name=perCustomer;
+                  CaptionML=ENU=New Page per Customer;
+                  ToolTipML=ENU=Specifies if each customer's information is printed on a new page if you have chosen two or more customers to be included in the report.;
+                  ApplicationArea=#Basic,#Suite;
+                  SourceExpr=NewPagePercustomer }
+
+      { 5000;2   ;Field     ;
+                  Name=ForNavOpenDesigner;
+                  CaptionML=ENU=Open Designer;
+                  SourceExpr=ReportForNavOpenDesigner;
+                  Visible=ReportForNavAllowDesign }
+
+    }
+  }
+  LABELS
+  {
+    { 74  ;BalanceCaption      ;CaptionML=ENU=Balance }
+    { 747 ;AgedOverdueAmounts  ;CaptionML=ENU=Aged Overdue Amounts }
+    { 742 ;AmnsInLCY           ;CaptionML=ENU=All Amounts in LCY. }
+  }
+  CODE
+  {
+    VAR
+      GLSetup@1011 : Record 98;
+      TempCustLedgEntry@1009 : TEMPORARY Record 21;
+      AgedCustLedgEntry@1022 : ARRAY [6] OF Record 21;
+      TempCurrency@1010 : TEMPORARY Record 4;
+      DetailedCustomerLedgerEntry@1102601000 : Record 379;
+      PrintAmountInLCY@1012 : Boolean;
+      EndingDate@1001 : Date;
+      AgingBy@1002 : 'Due Date,Posting Date,Document Date';
+      PeriodLength@1003 : DateFormula;
+      PrintDetails@1015 : Boolean;
+      HeadingType@1019 : 'Date Interval,Number of Days';
+      NewPagePercustomer@1027 : Boolean;
+      PeriodStartDate@1004 : ARRAY [5] OF Date;
+      PeriodEndDate@1005 : ARRAY [5] OF Date;
+      HeaderText@1006 : ARRAY [5] OF Text[30];
+      Text000@1007 : TextConst 'ENU=Not Due';
+      Text001@1008 : TextConst 'ENU=Before';
+      CurrencyCode@1016 : Code[10];
+      Text002@1020 : TextConst 'ENU=days';
+      Text003@1021 : TextConst 'ENU=More than';
+      Text004@1017 : TextConst 'ENU=Aged by %1';
+      Text005@1023 : TextConst 'ENU=Total for %1';
+      Text006@1024 : TextConst 'ENU=Aged as of %1';
+      Text007@1025 : TextConst 'ENU=Aged by %1';
+      NumberOfCurrencies@1028 : Integer;
+      Text009@1031 : TextConst 'ENU=Due Date,Posting Date,Document Date';
+      Text010@1032 : TextConst 'ENU=The Date Formula %1 cannot be used. Try to restate it. E.g. 1M+CM instead of CM+1M.';
+      LCYCurrency@1000000000 : Boolean;
+      Text032@1059 : TextConst '@@@=Negating the period length: %1 is the period length;ENU=-%1';
+      AgedOverdueAmtCptnLbl@2837 : TextConst 'ENU=Aged Overdue Amounts';
+      ReportForNav@5000 : DotNet "'ForNav.Reports.2.0.0.1260, Version=2.0.0.1260, Culture=neutral, PublicKeyToken=5284c1af2984feb0'.ForNav.Report" WITHEVENTS;
+      ReportForNavClient@5003 : DotNet "'ForNav.Reports.2.0.0.1260, Version=2.0.0.1260, Culture=neutral, PublicKeyToken=5284c1af2984feb0'.ForNav.Report" RUNONCLIENT;
+      ReportForNavDialog@5001 : Dialog;
+      ReportForNavOpenDesigner@5002 : Boolean;
+      ReportForNavAllowDesign@5004 : Boolean INDATASET;
+
+    LOCAL PROCEDURE CalcDates@5();
+    VAR
+      i@1000 : Integer;
+      PeriodLength2@1001 : DateFormula;
+    BEGIN
+      EVALUATE(PeriodLength2,STRSUBSTNO(Text032,PeriodLength));
+      IF AgingBy = AgingBy::"Due Date" THEN BEGIN
+        PeriodEndDate[1] := DMY2DATE(31,12,9999);
+        PeriodStartDate[1] := EndingDate + 1;
+      END ELSE BEGIN
+        PeriodEndDate[1] := EndingDate;
+        PeriodStartDate[1] := CALCDATE(PeriodLength2,EndingDate + 1);
+      END;
+      FOR i := 2 TO ARRAYLEN(PeriodEndDate) DO BEGIN
+        PeriodEndDate[i] := PeriodStartDate[i - 1] - 1;
+        PeriodStartDate[i] := CALCDATE(PeriodLength2,PeriodEndDate[i] + 1);
+      END;
+      PeriodStartDate[i] := 0D;
+      FOR i := 1 TO ARRAYLEN(PeriodEndDate) DO
+        IF PeriodEndDate[i] < PeriodStartDate[i] THEN
+          ERROR(Text010,PeriodLength);
+    END;
+
+    LOCAL PROCEDURE CreateHeadings@10();
+    VAR
+      i@1000 : Integer;
+    BEGIN
+      IF AgingBy = AgingBy::"Due Date" THEN BEGIN
+        HeaderText[1] := Text000;
+        i := 2;
+      END ELSE
+        i := 1;
+      WHILE i < ARRAYLEN(PeriodEndDate) DO BEGIN
+        IF HeadingType = HeadingType::"Date Interval" THEN
+          HeaderText[i] := STRSUBSTNO('%1\..%2',PeriodStartDate[i],PeriodEndDate[i])
+        ELSE
+          HeaderText[i] :=
+            STRSUBSTNO('%1 - %2 %3',EndingDate - PeriodEndDate[i] + 1,EndingDate - PeriodStartDate[i] + 1,Text002);
+        i := i + 1;
+      END;
+      IF HeadingType = HeadingType::"Date Interval" THEN
+        HeaderText[i] := STRSUBSTNO('%1 \%2',Text001,PeriodStartDate[i - 1])
+      ELSE
+        HeaderText[i] := STRSUBSTNO('%1 \%2 %3',Text003,EndingDate - PeriodStartDate[i - 1] + 1,Text002);
+    END;
+
+    LOCAL PROCEDURE InsertTemp@1(VAR CustLedgEntry@1040000 : Record 21);
+    VAR
+      Currency@1000 : Record 4;
+    BEGIN
+      WITH TempCustLedgEntry DO BEGIN
+        IF GET(CustLedgEntry."Entry No.") THEN
+          EXIT;
+        TempCustLedgEntry := CustLedgEntry;
+        INSERT;
+        IF PrintAmountInLCY THEN BEGIN
+          CLEAR(TempCurrency);
+          IF TempCurrency.INSERT THEN;
+          EXIT;
+        END;
+        IF TempCurrency.GET("Currency Code") THEN
+          EXIT;
+        IF TempCurrency.GET('') AND ("Currency Code" = GLSetup."LCY Code") THEN
+          EXIT;
+        IF TempCurrency.GET(GLSetup."LCY Code") AND ("Currency Code" = '') THEN
+          EXIT;
+        IF "Currency Code" <> '' THEN
+          Currency.GET("Currency Code")
+        ELSE BEGIN
+          CLEAR(Currency);
+        END;
+        TempCurrency := Currency;
+        TempCurrency.INSERT;
+      END;
+    END;
+
+    LOCAL PROCEDURE GetPeriodIndex@8(Date@1040000 : Date) : Integer;
+    VAR
+      i@1000 : Integer;
+    BEGIN
+      FOR i := 1 TO ARRAYLEN(PeriodEndDate) DO
+        IF Date IN [PeriodStartDate[i]..PeriodEndDate[i]] THEN
+          EXIT(i);
+    END;
+
+    LOCAL PROCEDURE UpdateCurrencyTotals@7(VAR ForNAVAccountsReceivbBufferParam@1000000000 : TEMPORARY Record 70220);
+    VAR
+      i@1000 : Integer;
+    BEGIN
+      CurrencyTotalsBuffer.RESET;
+      CurrencyTotalsBuffer.SETRANGE("Currency Code", ForNAVAccountsReceivbBufferParam."Currency Code");
+      IF NOT CurrencyTotalsBuffer.FINDFIRST THEN BEGIN
+        IF LCYCurrency THEN
+          CurrencyTotalsBuffer."Entry No." := 0
+        ELSE
+          CurrencyTotalsBuffer."Entry No." := CalcCurrencyEntryNo(ForNAVAccountsReceivbBufferParam."Currency Code");
+        CurrencyTotalsBuffer.Type := CurrencyTotalsBuffer.Type::CurrencyTotals;
+        CurrencyTotalsBuffer."Currency Code" := ForNAVAccountsReceivbBufferParam."Currency Code";
+        CurrencyTotalsBuffer.Amount := ForNAVAccountsReceivbBufferParam.Amount;
+        CurrencyTotalsBuffer.Balance := ForNAVAccountsReceivbBufferParam.Balance;
+        CurrencyTotalsBuffer."Amount - Interval 1" := ForNAVAccountsReceivbBufferParam."Amount - Interval 1";
+        CurrencyTotalsBuffer."Amount - Interval 2" := ForNAVAccountsReceivbBufferParam."Amount - Interval 2";
+        CurrencyTotalsBuffer."Amount - Interval 3" := ForNAVAccountsReceivbBufferParam."Amount - Interval 3";
+        CurrencyTotalsBuffer."Amount - Interval 4" := ForNAVAccountsReceivbBufferParam."Amount - Interval 4";
+        CurrencyTotalsBuffer."Amount - Interval 5" := ForNAVAccountsReceivbBufferParam."Amount - Interval 5";
+        CurrencyTotalsBuffer.INSERT;
+      END ELSE BEGIN
+        CurrencyTotalsBuffer.Amount += ForNAVAccountsReceivbBufferParam.Amount;
+        CurrencyTotalsBuffer.Balance += ForNAVAccountsReceivbBufferParam.Balance;
+        CurrencyTotalsBuffer."Amount - Interval 1" += ForNAVAccountsReceivbBufferParam."Amount - Interval 1";
+        CurrencyTotalsBuffer."Amount - Interval 2" += ForNAVAccountsReceivbBufferParam."Amount - Interval 2";
+        CurrencyTotalsBuffer."Amount - Interval 3" += ForNAVAccountsReceivbBufferParam."Amount - Interval 3";
+        CurrencyTotalsBuffer."Amount - Interval 4" += ForNAVAccountsReceivbBufferParam."Amount - Interval 4";
+        CurrencyTotalsBuffer."Amount - Interval 5" += ForNAVAccountsReceivbBufferParam."Amount - Interval 5";
+        CurrencyTotalsBuffer.MODIFY;
+      END;
+    END;
+
+    PROCEDURE InitializeRequest@11(NewEndingDate@1000 : Date;NewAgingBy@1001 : Option;NewPeriodLength@1002 : DateFormula;NewPrintAmountInLCY@1003 : Boolean;NewPrintDetails@1004 : Boolean;NewHeadingType@1005 : Option;NewPagePercust@1006 : Boolean);
+    BEGIN
+      EndingDate := NewEndingDate;
+      AgingBy := NewAgingBy;
+      PeriodLength := NewPeriodLength;
+      PrintAmountInLCY := NewPrintAmountInLCY;
+      PrintDetails := NewPrintDetails;
+      HeadingType := NewHeadingType;
+      NewPagePercustomer := NewPagePercust;
+    END;
+
+    LOCAL PROCEDURE CalcCurrencyEntryNo@1000000000(CurrencyCode@1000000000 : Code[10]) : Integer;
+    VAR
+      Currency@1000000001 : Record 4;
+    BEGIN
+      Currency.SETFILTER(Code,'..%1',CurrencyCode);
+      EXIT(Currency.COUNT);
+    END;
+
+    EVENT ReportForNav@5000::OnInit@5002();
+    VAR
+      ReportLayoutSelection@1000 : Record 9651;
+      CustomReportLayout@1001 : Record 9650;
+      CustomLayoutID@1002 : Variant;
+      InStream@1004 : InStream;
+      EmptyLayout@1003 : Text;
+    BEGIN
+      EmptyLayout := FORMAT(ReportLayoutSelection."Custom Report Layout Code");
+      CustomLayoutID := ReportLayoutSelection."Custom Report Layout Code";
+      ReportForNav.OData := GETURL(CLIENTTYPE::OData, COMPANYNAME, OBJECTTYPE::Page, 7702);
+      IF FORMAT(ReportLayoutSelection.GetTempLayoutSelected) <> EmptyLayout THEN
+        CustomLayoutID := ReportLayoutSelection.GetTempLayoutSelected
+      ELSE
+        IF ReportLayoutSelection.HasCustomLayout(ReportForNav.ReportID) = 1 THEN
+          CustomLayoutID := ReportLayoutSelection."Custom Report Layout Code";
+
+      IF (FORMAT(CustomLayoutID) <> EmptyLayout) AND CustomReportLayout.GET(CustomLayoutID) THEN BEGIN
+        CustomReportLayout.TESTFIELD(Type,CustomReportLayout.Type::RDLC);
+        CustomReportLayout.CALCFIELDS(Layout);
+        CustomReportLayout.Layout.CREATEINSTREAM(InStream,TEXTENCODING::UTF8);
+        ReportForNav.IsCustomLayout := TRUE;
+      END ELSE
+        REPORT.RDLCLAYOUT(ReportForNav.ReportID,InStream);
+
+      ReportForNav.LoadRdlc(InStream);
+      IF COPYSTR(LOWERCASE(GETURL(CLIENTTYPE::Current, COMPANYNAME, OBJECTTYPE::Codeunit, 1)), 1, 14) = 'dynamicsnav://' THEN BEGIN
+        ReportForNav.CheckClientAddIn();
+        ReportForNavClient := ReportForNavClient.Report(ReportForNav.Definition);
+        ReportForNavAllowDesign := ReportForNavClient.HasDesigner AND NOT ReportForNav.ParameterMode;
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnSave@5010(Base64Layout@1000 : Text);
+    VAR
+      CustomReportLayout@1002 : Record 9650;
+      ReportLayoutSelection@1003 : Record 9651;
+      LayoutId@1004 : Variant;
+      TempBlob@1007 : Record 99008535;
+      OutStream@1006 : OutStream;
+      Bstr@1005 : BigText;
+      EmptyLayout@1001 : Text;
+    BEGIN
+      EmptyLayout := FORMAT(ReportLayoutSelection."Custom Report Layout Code");
+      LayoutId := ReportLayoutSelection."Custom Report Layout Code";
+      IF ReportLayoutSelection.HasCustomLayout(ReportForNav.ReportID) = 1 THEN BEGIN
+        IF FORMAT(ReportLayoutSelection.GetTempLayoutSelected) <> EmptyLayout THEN BEGIN
+          LayoutId := ReportLayoutSelection.GetTempLayoutSelected;
+        END ELSE BEGIN
+          IF ReportLayoutSelection.GET(ReportForNav.ReportID, COMPANYNAME) THEN BEGIN
+          LayoutId := ReportLayoutSelection."Custom Report Layout Code";
+          END;
+        END;
+      END ELSE BEGIN
+        IF CONFIRM('Default custom layout not found. Create one?') THEN;
+      END;
+      IF FORMAT(LayoutId) <> EmptyLayout THEN BEGIN
+        TempBlob.Blob.CREATEOUTSTREAM(OutStream);
+        Bstr.ADDTEXT(Base64Layout);
+        Bstr.WRITE(OutStream);
+        CustomReportLayout.GET(LayoutId);
+        CustomReportLayout.ImportLayoutBlob(TempBlob, 'RDL');
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnParameters@5008(Parameters@1000 : Text);
+    BEGIN
+      ReportForNav.Parameters := REPORT.RUNREQUESTPAGE(ReportForNav.ReportID, Parameters);
+    END;
+
+    EVENT ReportForNav@5000::OnPreview@5009(Parameters@1000 : Text;FileName@1005 : Text);
+    VAR
+      PdfFile@1002 : File;
+      InStream@1003 : InStream;
+      OutStream@1004 : OutStream;
+    BEGIN
+      COMMIT;
+      PdfFile.CREATETEMPFILE;
+      PdfFile.CREATEOUTSTREAM(OutStream);
+      REPORT.SAVEAS(ReportForNav.ReportID, Parameters, REPORTFORMAT::Pdf, OutStream);
+      PdfFile.CREATEINSTREAM(InStream);
+      ReportForNavClient.ShowDesigner;
+      IF ReportForNav.IsValidPdf(PdfFile.NAME) THEN DOWNLOADFROMSTREAM(InStream, '', '', '', FileName);
+      PdfFile.CLOSE;
+    END;
+
+    EVENT ReportForNav@5000::OnPreSection@5012(DataItemId@1000000000 : Text;SectionId@1000000001 : Text);
+    BEGIN
+    END;
+
+    EVENT ReportForNav@5000::OnPostSection@50013(DataItemId@1000000000 : Text;SectionId@1000000001 : Text);
+    BEGIN
+    END;
+
+    EVENT ReportForNav@5000::OnClientOperation@5008(Args@1000 : DotNet "'mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Array");
+    VAR
+      op@1001 : Text;
+      FileMgmt@1002 : Codeunit 419;
+      Process@1006 : DotNet "'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Diagnostics.Process" RUNONCLIENT;
+      PathObj@1005 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Path" RUNONCLIENT;
+      FileVersionInfo@1003 : DotNet "'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Diagnostics.FileVersionInfo" RUNONCLIENT;
+      DirectoryHelper@1004 : DotNet "'mscorlib'.System.IO.Directory" RUNONCLIENT;
+    BEGIN
+      op := Args.GetValue(0);
+      CASE op OF
+        'TempPath': ReportForNav.Result := PathObj.GetTempPath();
+        'FileExists': ReportForNav.Result := FileMgmt.ClientFileExists(Args.GetValue(1));
+        'DirectoryExists': ReportForNav.Result := FileMgmt.ClientDirectoryExists(Args.GetValue(1));
+        'ProcessLocation': ReportForNav.Result := Process.GetCurrentProcess().MainModule.FileName;
+        'FileVersion': ReportForNav.Result := FileVersionInfo.GetVersionInfo(Args.GetValue(1)).FileVersion;
+        'DeleteFile': FileMgmt.DeleteClientFile(Args.GetValue(1));
+        'DeleteDirectory': IF STRLEN(Args.GetValue(1)) > 20 THEN
+          IF FileMgmt.ClientDirectoryExists(Args.GetValue(1)) THEN
+            DirectoryHelper.Delete(FORMAT(Args.GetValue(1)), TRUE);
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnCheckForNavClientVersion@5007();
+    BEGIN
+      ReportForNavClient := ReportForNavClient.Report();
+      IF ReportForNav.MyFileVersion <> ReportForNavClient.MyFileVersion THEN
+        ERROR('You have version %1 of the Reports ForNAV assembly here:\\%2\\Please close your NAV client and update it to version %3.',
+              ReportForNavClient.MyFileVersion, ReportForNavClient.MyFileName, ReportForNav.MyFileVersion);
+    END;
+
+    EVENT ReportForNav@5000::OnSelectPrinter@5006();
+    BEGIN
+      ReportForNav.PrinterSettings.PageSettings := ReportForNavClient.SelectPrinter(ReportForNav.PrinterSettings.PrinterName,ReportForNav.PrinterSettings.ShowPrinterDialog,ReportForNav.PrinterSettings.PageSettings);
+    END;
+
+    EVENT ReportForNav@5000::OnPrint@5005(InStream@1000000000 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Stream");
+    VAR
+      ClientFileName@1000000001 : Text[255];
+    BEGIN
+      DOWNLOADFROMSTREAM(InStream, '', '<TEMP>', '', ClientFileName);
+      ReportForNavClient.Print(ClientFileName);
+    END;
+
+    EVENT ReportForNav@5000::OnDesign@5007(Data@1001 : Text);
+    BEGIN
+      ReportForNavClient.Data := Data;
+      WHILE ReportForNavClient.DesignReport DO BEGIN
+        ReportForNav.HandleRequest(ReportForNavClient.GetRequest());
+        SLEEP(100);
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnView@5008(ClientFileName@1000000000 : Text;Parameters@1000000001 : Text;ServerFileName@1000000002 : Text);
+    VAR
+      ServerFile@1000000003 : File;
+      ServerInStream@1000000004 : InStream;
+    BEGIN
+      ServerFile.OPEN(ServerFileName);
+      ServerFile.CREATEINSTREAM(ServerInStream);
+      DOWNLOADFROMSTREAM(ServerInStream,'','','',ClientFileName);
+    END;
+
+    EVENT ReportForNav@5000::OnMessage@5009(Operation@1000000000 : Text;Parameter@1000000001 : Text;ParameterNo@1000000002 : Integer);
+    BEGIN
+      CASE Operation OF
+        'Open'    : ReportForNavDialog.OPEN(Parameter);
+        'Update'  : ReportForNavDialog.UPDATE(ParameterNo,Parameter);
+        'Close'   : ReportForNavDialog.CLOSE();
+        'Message' : MESSAGE(Parameter);
+        'Error'   : ERROR(Parameter);
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnPrintPreview@5011(InStream@1000000000 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Stream";Preview@1000000001 : Boolean);
+    VAR
+      ClientFileName@1000000002 : Text[255];
+    BEGIN
+      CurrReport.LANGUAGE := SYSTEM.GLOBALLANGUAGE;
+      DOWNLOADFROMSTREAM(InStream, '', '<TEMP>', '', ClientFileName);
+      WHILE ReportForNavClient.PrintPreviewDialog(ClientFileName,ReportForNav.PrinterSettings.PrinterName,Preview) DO BEGIN
+        ReportForNav.HandlePrintPreviewRequest(ReportForNavClient.GetPrintPreviewRequest());
+        SLEEP(100);
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnTotals@5004(DataItemId@1000000000 : Text;Operation@1000000001 : Text;GroupTotalFieldNo@1000000002 : Integer);
+    VAR
+      CurrRecRef@1000000003 : RecordRef;
+      NextRecRef@1000000004 : RecordRef;
+      CurrKeyRef@1000000005 : KeyRef;
+      NextKeyRef@1000000006 : KeyRef;
+      FieldIndex@1000000007 : Integer;
+      GroupFieldIndex@1000000008 : Integer;
+    BEGIN
+      // Do not change (Autogenerated by Reports ForNAV) - Instead change the Create Totals, Total Fields or Group Total Fields properties on the Data item in the ForNAV designer
+      CASE DataItemId OF
+        'AccountsReceivblBuffer': WITH AccountsReceivblBuffer DO CASE Operation OF
+           'Add': BEGIN
+                ReportForNav.AddTotal(DataItemId,0,"Amount - Interval 1");
+                ReportForNav.AddTotal(DataItemId,1,"Amount - Interval 1 (LCY)");
+                ReportForNav.AddTotal(DataItemId,2,"Amount - Interval 2");
+                ReportForNav.AddTotal(DataItemId,3,"Amount - Interval 2 (LCY)");
+                ReportForNav.AddTotal(DataItemId,4,"Amount - Interval 3");
+                ReportForNav.AddTotal(DataItemId,5,"Amount - Interval 3 (LCY)");
+                ReportForNav.AddTotal(DataItemId,6,"Amount - Interval 4");
+                ReportForNav.AddTotal(DataItemId,7,"Amount - Interval 4 (LCY)");
+                ReportForNav.AddTotal(DataItemId,8,"Amount - Interval 5");
+                ReportForNav.AddTotal(DataItemId,9,"Amount - Interval 5 (LCY)");
+                ReportForNav.AddTotal(DataItemId,10,"Amount (LCY)");
+                ReportForNav.AddTotal(DataItemId,11,Balance);
+                ReportForNav.AddTotal(DataItemId,12,"Balance (LCY)");
+                ReportForNav.AddTotal(DataItemId,13,Amount);
+                ReportForNav.AddTotal(DataItemId,14,Balance);
+                ReportForNav.AddTotal(DataItemId,15,"Amount - Interval 1");
+                ReportForNav.AddTotal(DataItemId,16,"Amount - Interval 2");
+                ReportForNav.AddTotal(DataItemId,17,"Amount - Interval 3");
+                ReportForNav.AddTotal(DataItemId,18,"Amount - Interval 4");
+                ReportForNav.AddTotal(DataItemId,19,"Amount - Interval 5");
+              END;
+           'Restore': BEGIN
+                 "Amount - Interval 1" := ReportForNav.RestoreTotal(DataItemId,0,GroupTotalFieldNo);
+                 "Amount - Interval 1 (LCY)" := ReportForNav.RestoreTotal(DataItemId,1,GroupTotalFieldNo);
+                 "Amount - Interval 2" := ReportForNav.RestoreTotal(DataItemId,2,GroupTotalFieldNo);
+                 "Amount - Interval 2 (LCY)" := ReportForNav.RestoreTotal(DataItemId,3,GroupTotalFieldNo);
+                 "Amount - Interval 3" := ReportForNav.RestoreTotal(DataItemId,4,GroupTotalFieldNo);
+                 "Amount - Interval 3 (LCY)" := ReportForNav.RestoreTotal(DataItemId,5,GroupTotalFieldNo);
+                 "Amount - Interval 4" := ReportForNav.RestoreTotal(DataItemId,6,GroupTotalFieldNo);
+                 "Amount - Interval 4 (LCY)" := ReportForNav.RestoreTotal(DataItemId,7,GroupTotalFieldNo);
+                 "Amount - Interval 5" := ReportForNav.RestoreTotal(DataItemId,8,GroupTotalFieldNo);
+                 "Amount - Interval 5 (LCY)" := ReportForNav.RestoreTotal(DataItemId,9,GroupTotalFieldNo);
+                 "Amount (LCY)" := ReportForNav.RestoreTotal(DataItemId,10,GroupTotalFieldNo);
+                 Balance := ReportForNav.RestoreTotal(DataItemId,11,GroupTotalFieldNo);
+                 "Balance (LCY)" := ReportForNav.RestoreTotal(DataItemId,12,GroupTotalFieldNo);
+                 Amount := ReportForNav.RestoreTotal(DataItemId,13,GroupTotalFieldNo);
+                 Balance := ReportForNav.RestoreTotal(DataItemId,14,GroupTotalFieldNo);
+                 "Amount - Interval 1" := ReportForNav.RestoreTotal(DataItemId,15,GroupTotalFieldNo);
+                 "Amount - Interval 2" := ReportForNav.RestoreTotal(DataItemId,16,GroupTotalFieldNo);
+                 "Amount - Interval 3" := ReportForNav.RestoreTotal(DataItemId,17,GroupTotalFieldNo);
+                 "Amount - Interval 4" := ReportForNav.RestoreTotal(DataItemId,18,GroupTotalFieldNo);
+                 "Amount - Interval 5" := ReportForNav.RestoreTotal(DataItemId,19,GroupTotalFieldNo);
+              END;
+        END;
+      END;
+    END;
+
+    BEGIN
+    {
+      Copyright (c) 2017 ForNAV ApS - All Rights Reserved
+      The intellectual work and technical concepts contained in this file are proprietary to ForNAV.
+      Unauthorized reverse engineering, distribution or copying of this file, parts hereof, or derived work, via any medium is strictly prohibited without written permission from ForNAV ApS.
+      This source code is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    }
+    END.
+  }
+  RDLDATA
+  {
+    <?xml version="1.0" encoding="utf-8"?>
+<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
+  <Description>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</Description>
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="DataSource">
+      <ConnectionProperties>
+        <DataProvider>SQL</DataProvider>
+        <ConnectString />
+      </ConnectionProperties>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>c4820e68-dd09-4fe6-8c7e-ac9b7433a0c7</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <Height>2in</Height>
+        <Style />
+      </Body>
+      <Width>6.5in</Width>
+      <Page>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <rd:ReportUnitType>Invalid</rd:ReportUnitType>
+  <rd:ReportID>2ef6a1c8-961b-4a95-8626-3d616e0ec239</rd:ReportID>
+</Report>
+    END_OF_RDLDATA
+  }
+}
+
