@@ -2,8 +2,8 @@ OBJECT Table 70998 ForNAV Sales Tax Buffer
 {
   OBJECT-PROPERTIES
   {
-    Date=17-07-17;
-    Time=15:23:01;
+    Date=07/17/17;
+    Time=[ 3:23:01 PM];
     Modified=Yes;
     Version List=FORNAVCTP5;
   }

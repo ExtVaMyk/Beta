@@ -2,8 +2,8 @@ OBJECT Codeunit 70029 ForNAV Replace Report Sel.
 {
   OBJECT-PROPERTIES
   {
-    Date=20-07-17;
-    Time=20:16:47;
+    Date=07/20/17;
+    Time=[ 8:16:47 PM];
     Modified=Yes;
     Version List=FORNAVCTP5;
   }

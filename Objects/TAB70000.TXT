@@ -2,8 +2,8 @@ OBJECT Table 70000 ForNAV Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=20-07-17;
-    Time=20:02:29;
+    Date=08/09/17;
+    Time=[ 1:16:07 PM];
     Modified=Yes;
     Version List=FORNAVCTP5;
   }
@@ -20,7 +20,9 @@ OBJECT Table 70000 ForNAV Setup
 
                                                    OptionString=World Wide,North America,Other }
     { 10  ;   ;VAT Amount Specification;Option    ;OptionString=Multiple Lines,Always,Never,N/A. (Sales Tax) }
-    { 60  ;   ;Watermark           ;BLOB           }
+    { 20  ;   ;Logo                ;BLOB           }
+    { 60  ;   ;Document Watermark  ;BLOB           }
+    { 61  ;   ;List Report Watermark;BLOB          }
     { 70  ;   ;Payment Note        ;Text250        }
     { 80  ;   ;Legal Conditions    ;Text250        }
   }
@@ -81,7 +83,7 @@ OBJECT Table 70000 ForNAV Setup
       PurchaseTemplate.RUNMODAL;
     END;
 
-    PROCEDURE ImportWatermarkFromClientFile@21() : Boolean;
+    PROCEDURE ImportWatermarkFromClientFile@21(Which@1000 : Integer) : Boolean;
     VAR
       TempBlob@1000000001 : TEMPORARY Record 99008535;
       FileMgt@1000000000 : Codeunit 419;
@@ -90,7 +92,14 @@ OBJECT Table 70000 ForNAV Setup
       FileName := FileMgt.BLOBImport(TempBlob,'');
 
       IF FileName <> '' THEN BEGIN
-        Watermark := TempBlob.Blob;
+        CASE Which OF
+          FIELDNO(Logo):
+            Logo := TempBlob.Blob;
+          FIELDNO("Document Watermark"):
+            "Document Watermark" := TempBlob.Blob;
+          FIELDNO("List Report Watermark"):
+            "List Report Watermark" := TempBlob.Blob;
+        END;
         EXIT(TRUE);
       END;
 

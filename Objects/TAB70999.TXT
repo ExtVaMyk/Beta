@@ -2,8 +2,8 @@ OBJECT Table 70999 ForNAV Document Line Buffer
 {
   OBJECT-PROPERTIES
   {
-    Date=01-05-17;
-    Time=12:00:00;
+    Date=05/01/17;
+    Time=12:00:00 PM;
     Version List=FORNAVCTP3;
   }
   PROPERTIES

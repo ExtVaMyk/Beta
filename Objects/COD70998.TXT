@@ -2,8 +2,8 @@ OBJECT Codeunit 70998 ForNAV Test Runner
 {
   OBJECT-PROPERTIES
   {
-    Date=14-07-17;
-    Time=12:08:41;
+    Date=07/14/17;
+    Time=12:08:41 PM;
     Version List=FORNAVCTP4;
   }
   PROPERTIES

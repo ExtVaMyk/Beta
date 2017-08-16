@@ -2,8 +2,8 @@ OBJECT Page 70000 ForNAV Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=20-07-17;
-    Time=19:51:52;
+    Date=08/09/17;
+    Time=12:56:11 PM;
     Modified=Yes;
     Version List=FORNAVCTP5;
   }
@@ -26,14 +26,36 @@ OBJECT Page 70000 ForNAV Setup
       { 1       ;    ;ActionContainer;
                       ActionContainerType=ActionItems }
       { 1000000010;1 ;Action    ;
-                      Name=ImportWatermark;
-                      CaptionML=ENU=Import Watermark;
+                      Name=ImportDocWatermark;
+                      CaptionML=ENU=Import Document Watermark;
                       Promoted=Yes;
                       PromotedIsBig=Yes;
                       Image=Import;
                       PromotedCategory=Process;
                       OnAction=BEGIN
-                                 ImportWatermarkFromClientFile;
+                                 ImportWatermarkFromClientFile(FIELDNO("Document Watermark"));
+                               END;
+                                }
+      { 8       ;1   ;Action    ;
+                      Name=ImportListWatermark;
+                      CaptionML=ENU=Import List Report Watermark;
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=ImportCodes;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 ImportWatermarkFromClientFile(FIELDNO("List Report Watermark"));
+                               END;
+                                }
+      { 9       ;1   ;Action    ;
+                      Name=ImportLogo;
+                      CaptionML=ENU=Import Logo;
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=CompanyInformation;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 ImportWatermarkFromClientFile(FIELDNO(Logo));
                                END;
                                 }
       { 2       ;1   ;Action    ;

@@ -2,8 +2,8 @@ OBJECT Codeunit 70080 ForNAV Test Valid Doc iFace
 {
   OBJECT-PROPERTIES
   {
-    Date=14-07-17;
-    Time=14:59:03;
+    Date=07/14/17;
+    Time=[ 2:59:03 PM];
     Version List=FORNAVCTP4;
   }
   PROPERTIES

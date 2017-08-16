@@ -2,8 +2,8 @@ OBJECT Codeunit 70995 Create Large Sales Quote
 {
   OBJECT-PROPERTIES
   {
-    Date=14-07-17;
-    Time=10:54:21;
+    Date=07/14/17;
+    Time=10:54:21 AM;
     Version List=FORNAVCTP4;
   }
   PROPERTIES

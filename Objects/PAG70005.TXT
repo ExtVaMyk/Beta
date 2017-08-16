@@ -2,8 +2,8 @@ OBJECT Page 70005 ForNAV Setup Wizard
 {
   OBJECT-PROPERTIES
   {
-    Date=20-07-17;
-    Time=20:05:29;
+    Date=08/09/17;
+    Time=12:59:10 PM;
     Modified=Yes;
     Version List=FORNAVCTP5;
   }
@@ -184,7 +184,27 @@ OBJECT Page 70005 ForNAV Setup Wizard
                 SourceExpr=WatermarkTxt;
                 Editable=FALSE;
                 OnDrillDown=BEGIN
-                              ImportWatermarkFromClientFile;
+                              ImportWatermarkFromClientFile(FIELDNO("Document Watermark"));
+                            END;
+
+                ShowCaption=No }
+
+    { 28  ;2   ;Field     ;
+                Name=ImportWatermarkList;
+                SourceExpr=WatermarkListTxt;
+                Editable=FALSE;
+                OnDrillDown=BEGIN
+                              ImportWatermarkFromClientFile(FIELDNO("List Report Watermark"));
+                            END;
+
+                ShowCaption=No }
+
+    { 26  ;2   ;Field     ;
+                Name=ImportCompanyLogo;
+                SourceExpr=CompanyLogoTxt;
+                Editable=FALSE;
+                OnDrillDown=BEGIN
+                              ImportWatermarkFromClientFile(FIELDNO(Logo));
                             END;
 
                 ShowCaption=No }
@@ -208,7 +228,9 @@ OBJECT Page 70005 ForNAV Setup Wizard
       ReplaceReports@1012 : Boolean;
       WrongLocalization@1014 : Boolean INDATASET;
       Step@1006 : 'Start,Step1,Step2,Step3,Finish';
-      WatermarkTxt@1000000000 : TextConst 'ENU=Click to import a watermark';
+      WatermarkTxt@1000000000 : TextConst 'ENU=Click to import a watermark for document reports';
+      WatermarkListTxt@1018 : TextConst 'ENU=Click to import a watermark for list reports';
+      CompanyLogoTxt@1017 : TextConst 'ENU=Click to import a company logo';
       PaymentNoteTxt@1015 : TextConst 'ENU=- You can print a payment note here -';
       LegalConditionsTxt@1016 : TextConst 'ENU=- You can print your legal conditions here -';
 

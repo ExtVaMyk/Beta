@@ -1,19 +1,16 @@
-OBJECT Report 70527 ForNAV Template
+OBJECT Report 70203 ForNAV Sales per Customer
 {
   OBJECT-PROPERTIES
   {
-    Date=08/09/17;
-    Time=[ 7:53:14 PM];
+    Date=08/01/17;
+    Time=10:46:52 AM;
     Modified=Yes;
-    Version List=CTP4,FORNAV2.0.0.1260/1260;
+    Version List=Exercise 4,FORNAV2.0.0.1260/1260;
   }
   PROPERTIES
   {
     OnInitReport=BEGIN
-                   ;ReportForNav:= ReportForNav.Report(CurrReport.OBJECTID,CurrReport.LANGUAGE,SERIALNUMBER,USERID,COMPANYNAME);ReportForNav.Init;
-                   CODEUNIT.RUN(CODEUNIT::"ForNAV First Time Setup");
-                   COMMIT;
-                   ReportForNavOpenDesigner := TRUE;
+                                                                                                                              ;ReportForNav:= ReportForNav.Report(CurrReport.OBJECTID,CurrReport.LANGUAGE,SERIALNUMBER,USERID,COMPANYNAME);ReportForNav.Init;
                  END;
 
     OnPreReport=BEGIN
@@ -27,9 +24,41 @@ OBJECT Report 70527 ForNAV Template
   }
   DATASET
   {
-    { 1000000000;;DataItem;                  ;
-               DataItemTable=Table2000000026;
-               MaxIteration=1 }
+    { 1   ;    ;DataItem;                    ;
+               DataItemTable=Table70203;
+               OnPreDataItem=BEGIN
+                               InitReportBasedOnQuery
+                             END;
+
+               Temporary=Yes }
+
+    { 2   ;1   ;Column  ;CustomerNo_SalesperCustomer;
+               IncludeCaption=No;
+               SourceExpr="Customer No." }
+
+    { 3   ;1   ;Column  ;CustomerName_SalesperCustomer;
+               IncludeCaption=No;
+               SourceExpr="Customer Name" }
+
+    { 4   ;1   ;Column  ;CustomerCity_SalesperCustomer;
+               IncludeCaption=No;
+               SourceExpr="Customer City" }
+
+    { 5   ;1   ;Column  ;ItemNo_SalesperCustomer;
+               IncludeCaption=No;
+               SourceExpr="Item No." }
+
+    { 6   ;1   ;Column  ;ValuedQty_SalesperCustomer;
+               IncludeCaption=No;
+               SourceExpr="Valued Qty." }
+
+    { 7   ;1   ;Column  ;SalesAmountActual_SalesperCustomer;
+               IncludeCaption=No;
+               SourceExpr="Sales Amount (Actual)" }
+
+    { 8   ;1   ;Column  ;ItemDescription_SalesperCustomer;
+               IncludeCaption=No;
+               SourceExpr="Item Description" }
 
   }
   REQUESTPAGE
@@ -74,6 +103,27 @@ OBJECT Report 70527 ForNAV Template
       ReportForNavDialog@5001 : Dialog;
       ReportForNavOpenDesigner@5002 : Boolean;
       ReportForNavAllowDesign@5004 : Boolean INDATASET;
+
+    PROCEDURE InitReportBasedOnQuery@1();
+    VAR
+      ExQuery@1002 : Query 70203;
+      NextEntryNo@1001 : Integer;
+    BEGIN
+      ExQuery.OPEN;
+      WHILE ExQuery.READ DO
+        WITH "ForNAV Sales per Customer" DO BEGIN
+          NextEntryNo := NextEntryNo + 1;
+          "Entry No." := NextEntryNo;
+          "Customer No." := ExQuery.No;
+          "Customer Name" := ExQuery.Name;
+          "Customer City" := ExQuery.City;
+          "Item No." := ExQuery.Item_No;
+          "Valued Qty." := ExQuery.Sum_Valued_Quantity;
+          "Sales Amount (Actual)" := ExQuery.Sum_Sales_Amount_Actual;
+          "Item Description" := ExQuery.Description;
+          INSERT;
+        END;
+    END;
 
     EVENT ReportForNav@5000::OnInit@5002();
     VAR
@@ -262,7 +312,7 @@ OBJECT Report 70527 ForNAV Template
   {
     <?xml version="1.0" encoding="utf-8"?>
 <Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
-  <Description>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</Description>
+  <Description>1gkAAK2WbZPaNhDH33em30GjmTaXGQrGD9ikOBkCuclNebgeHOm7jrDWoES2iS2To5++Kws4cyE3pM3AACtppd9/94+g9+YhkWQLeSGyNKTtpkUJpFHGRboKaani3wL65vXPP/X+Ujm7g02Wq2LEdlmpZpALJsU/kJPHj4vjRm7Tbnp6t5MhSiYsgZDud7rO8gnbUjLIUpVncr7b4NwQtu8eNjkURbN2aPP+phbaDfKNZVt9TONwKgnJgaRBBqVUZQ44lkKJKbJBbsulFNEfsJtnn0Cv5n7EAghsy49dcC3kH4piI9nOcM+YhIJsUPOgLFSWQH7lWZbVfknJiaSjaLtp4aNtd3Cn6fIjRGqShdS3bMuh5FqA5B9gifXbigjucxnStVKbV61WyrYctq98yw1ak/6iNR0yxVqDLNmwdHf1YnA3ndzPfrGtm1RBnjKFhzGJ8Ujx5gukuWUreA9itVbI0PUtM/JBcLXGgbYWNmb5SqRFFTYIPm3LvCAY9iOkfd3VBvE3CquwEbjQcw8671OBK+aQqnUxjftjIaVIAFko6csvbFeMIFZ9/hGrNMg4LJgsAY9SeQkU7URI7y1LeVF9xOBGQdLee0NXsL+oKo2FPtT5iUlMmXVRdKreCxn30ZwtJS6p3vaVPplaCPgS0sfBkUg/6fgOPl8LiRreA9P+H4/06A1H61IyhwR1s3xXF1Gx14XUxNxBHFLnLLbeH3IDbTSbEbte5wFLZ+u8QouZLAA7iJEas4dpGsEt5Lqhx7mZWKEL0N0hjThEnus5Dm8HEQ8c7rBOO/Ysp9PpdB07ZpzF4Ds6Ce2IxnmCYGxzHdLAa3aDbtujpPVUnm3kuWflvc34ri5Ox05d2nNCvpZdk+ZbSws6MXQdx4utDo/8yG/bvGv7gcuXTmy5vtfxA+uJtD3AUVjXaXZtrAatyUJhY7wfxCCTZZIaeU+Vtyrpj51vnba+Z3LPeEF7yDaGm4GqvvaG7ODuSfb314afZWUegb7kQvrr5zJTvx/myCRrmhH0ZxrJksOAbVR14+yrps8yTdHfv7Mt1FTOs1QYfScXZlwMNocHdQbMqcDc58AGQu2+D0xn/F8wtwLzzoHp6Qt7qJf+iP55FU3nHE112/I/L6yRWU1w+eVMQ4hEwuQZrE6F5Z/DqmD6SVamqh+pksmL8MxPrkkjVybx5Q8A9SvQ4FvdHEIR5aLa9vK21pL+s9l6rdNrxNw6bfOjebxxeq1n/pC9/hc=</Description>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
     <DataSource Name="DataSource">
@@ -271,7 +321,7 @@ OBJECT Report 70527 ForNAV Template
         <ConnectString />
       </ConnectionProperties>
       <rd:SecurityType>None</rd:SecurityType>
-      <rd:DataSourceID>17a7f641-5e7b-438d-8e19-46e0ba32d129</rd:DataSourceID>
+      <rd:DataSourceID>5e97c99e-2bb1-49c1-99d4-46a303b1c4d9</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <ReportSections>
@@ -287,7 +337,7 @@ OBJECT Report 70527 ForNAV Template
     </ReportSection>
   </ReportSections>
   <rd:ReportUnitType>Invalid</rd:ReportUnitType>
-  <rd:ReportID>40bc8683-8fb4-4526-851c-87fbbe0af3a2</rd:ReportID>
+  <rd:ReportID>33262c3e-bf22-4dbb-9d9f-04edbfe31853</rd:ReportID>
 </Report>
     END_OF_RDLDATA
   }

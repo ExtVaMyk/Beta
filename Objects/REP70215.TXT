@@ -2,8 +2,8 @@ OBJECT Report 70215 ForNAV Salesperson-Commission
 {
   OBJECT-PROPERTIES
   {
-    Date=17-07-27;
-    Time=17:08:30;
+    Date=07/17/27;
+    Time=[ 5:08:30 PM];
     Modified=Yes;
     Version List=VAM1,FORNAV2.0.0.1260/1260;
   }

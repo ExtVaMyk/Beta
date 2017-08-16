@@ -2,8 +2,8 @@ OBJECT Codeunit 70996 Create Large Sales Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=14-07-17;
-    Time=10:54:23;
+    Date=07/14/17;
+    Time=10:54:23 AM;
     Version List=FORNAVCTP4;
   }
   PROPERTIES

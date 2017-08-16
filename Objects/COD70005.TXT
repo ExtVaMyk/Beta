@@ -2,8 +2,8 @@ OBJECT Codeunit 70005 ForNAV Detect Localization
 {
   OBJECT-PROPERTIES
   {
-    Date=20-07-17;
-    Time=19:43:26;
+    Date=07/20/17;
+    Time=[ 7:43:26 PM];
     Modified=Yes;
     Version List=FORNAVCTP5;
   }

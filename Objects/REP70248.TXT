@@ -2,8 +2,8 @@ OBJECT Report 70248 ForNAV Cust./Item Statistics
 {
   OBJECT-PROPERTIES
   {
-    Date=17-07-27;
-    Time=16:39:13;
+    Date=07/27/17;
+    Time=[ 4:26:26 PM];
     Modified=Yes;
     Version List=VAM1,FORNAV2.0.0.1260/1260;
   }
@@ -185,7 +185,7 @@ OBJECT Report 70248 ForNAV Cust./Item Statistics
       ExcelBuf.AddInfoColumn(FORMAT(Text002),FALSE,FALSE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
       ExcelBuf.NewRow;
       ExcelBuf.AddInfoColumn(FORMAT(Text004),FALSE,TRUE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
-      ExcelBuf.AddInfoColumn(REPORT::"Customer/Item Statistics",FALSE,FALSE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Number);
+      ExcelBuf.AddInfoColumn(REPORT::"ForNAV Cust./Item Statistics",FALSE,FALSE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Number);
       ExcelBuf.NewRow;
       ExcelBuf.AddInfoColumn(FORMAT(Text006),FALSE,TRUE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);
       ExcelBuf.AddInfoColumn(USERID,FALSE,FALSE,FALSE,FALSE,'',ExcelBuf."Cell Type"::Text);

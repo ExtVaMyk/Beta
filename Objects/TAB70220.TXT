@@ -2,8 +2,8 @@ OBJECT Table 70220 ForNAV Accounts Receivb.Buffer
 {
   OBJECT-PROPERTIES
   {
-    Date=17-08-01;
-    Time=14:48:49;
+    Date=08/01/17;
+    Time=[ 2:48:49 PM];
     Modified=Yes;
     Version List=VAM1,FORNAVCTP;
   }

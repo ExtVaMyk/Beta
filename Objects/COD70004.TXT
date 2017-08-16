@@ -2,8 +2,8 @@ OBJECT Codeunit 70004 ForNAV Get Sales Tax Details
 {
   OBJECT-PROPERTIES
   {
-    Date=17-07-17;
-    Time=15:25:13;
+    Date=07/17/17;
+    Time=[ 3:25:13 PM];
     Modified=Yes;
     Version List=FORNAVCTP5;
   }

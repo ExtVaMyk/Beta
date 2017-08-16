@@ -2,8 +2,8 @@ OBJECT Codeunit 70999 ForNAV Test
 {
   OBJECT-PROPERTIES
   {
-    Date=14-07-17;
-    Time=14:59:43;
+    Date=07/14/17;
+    Time=[ 2:59:43 PM];
     Version List=FORNAVCTP4;
   }
   PROPERTIES
@@ -78,7 +78,6 @@ OBJECT Codeunit 70999 ForNAV Test
 
       IF ForNAVSetup.GetLegalConditions('NLD') <> 'Nederlands' THEN
         ERROR('Wrong Translation');
-
     END;
 
     [Test]

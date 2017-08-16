@@ -2,8 +2,8 @@ OBJECT Codeunit 70003 ForNAV Update No. Printed
 {
   OBJECT-PROPERTIES
   {
-    Date=14-07-17;
-    Time=14:46:59;
+    Date=07/14/17;
+    Time=[ 2:46:59 PM];
     Version List=FORNAVCTP4;
   }
   PROPERTIES

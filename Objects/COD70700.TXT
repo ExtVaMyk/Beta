@@ -2,8 +2,8 @@ OBJECT Codeunit 70700 Create Report Tests
 {
   OBJECT-PROPERTIES
   {
-    Date=14-07-17;
-    Time=15:14:52;
+    Date=07/14/17;
+    Time=[ 3:14:52 PM];
     Version List=FORNAVCTP4;
   }
   PROPERTIES

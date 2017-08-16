@@ -2,8 +2,8 @@ OBJECT Table 70001 ForNAV Legal Cond. Translation
 {
   OBJECT-PROPERTIES
   {
-    Date=14-07-17;
-    Time=10:55:28;
+    Date=07/14/17;
+    Time=10:55:28 AM;
     Version List=FORNAVCTP5;
   }
   PROPERTIES

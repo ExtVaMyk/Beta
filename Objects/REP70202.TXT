@@ -1,69 +1,53 @@
-OBJECT Report 70519 ForNAV Sales Templ. Sales Tax
+OBJECT Report 70202 ForNAV Vendor Top 10 List
 {
   OBJECT-PROPERTIES
   {
-    Date=08/10/17;
-    Time=[ 9:11:00 AM];
+    Date=08/01/17;
+    Time=10:28:36 AM;
     Modified=Yes;
-    Version List=CTP4,FORNAV2.0.0.1260/1260;
+    Version List=FORNAV2.0.0.1260/1260;
   }
   PROPERTIES
   {
-    CaptionML=ENU=ForNAV Sales Template;
+    CaptionML=ENU=Customer Top 10 List;
     OnInitReport=BEGIN
-                   ;ReportForNav:= ReportForNav.Report(CurrReport.OBJECTID,CurrReport.LANGUAGE,SERIALNUMBER,USERID,COMPANYNAME);ReportForNav.Init;
-                   CODEUNIT.RUN(CODEUNIT::"ForNAV First Time Setup");
-                   COMMIT;
-                   ReportForNavOpenDesigner := TRUE;
+                                                                                                                              ;ReportForNav:= ReportForNav.Report(CurrReport.OBJECTID,CurrReport.LANGUAGE,SERIALNUMBER,USERID,COMPANYNAME);ReportForNav.Init;
                  END;
 
-    OnPreReport=VAR
-                  ForNAVSetup@1000000000 : Record 70000;
-                BEGIN
+    OnPreReport=BEGIN
                   ;ReportForNav.OpenDesigner:=ReportForNavOpenDesigner;IF NOT ReportForNav.Pre THEN CurrReport.QUIT;
-                  ReportForNav.GetDataItem('Header').Copies := NoOfCopies;
                 END;
 
     OnPostReport=BEGIN
                    ;ReportForNav.Post;
-                   ERROR('');
                  END;
 
   }
   DATASET
   {
-    { 2   ;    ;DataItem;Header              ;
-               DataItemTable=Table112;
-               DataItemTableView=SORTING(No.);
+    { 2   ;    ;DataItem;                    ;
+               DataItemTable=Table23;
+               DataItemTableView=SORTING(Net Change (LCY))
+                                 ORDER(Descending);
                OnAfterGetRecord=BEGIN
-                                  ReportForNav.PageNo := 1;
-                                  ChangeLanguage("Language Code");
-                                  GetSalesTaxDetails;
+                                  i += 1;
+                                  IF i = NoOfRecordsToPrint THEN
+                                    CurrReport.BREAK;
                                 END;
 
-               ReqFilterFields=No.,Posting Date;
-               CalcFields=Amount Including VAT,Amount }
-
-    { 1000000000;1;Column;HasDiscount        ;
-               IncludeCaption=No;
-               SourceExpr=ForNAVCheckDocumentDiscount.HasDiscount(Header) }
-
-    { 3   ;1   ;DataItem;Line                ;
-               DataItemTable=Table113;
-               DataItemTableView=SORTING(Document No.,Line No.);
-               DataItemLinkReference=Header;
-               DataItemLink=Document No.=FIELD(No.) }
-
-    { 1   ;1   ;DataItem;SalesTaxBuffer      ;
-               DataItemTable=Table70998;
-               DataItemTableView=SORTING(Primary Key);
-               Temporary=Yes }
+               ReqFilterFields=No.,Name,Vendor Posting Group,Country/Region Code,Date Filter;
+               CalcFields=Balance (LCY),Net Change (LCY) }
 
   }
   REQUESTPAGE
   {
     PROPERTIES
     {
+      OnOpenPage=BEGIN
+                   IF NoOfRecordsToPrint = 0 THEN
+                     NoOfRecordsToPrint := 10;
+                 END;
+
     }
     CONTROLS
     {
@@ -71,7 +55,7 @@ OBJECT Report 70519 ForNAV Sales Templ. Sales Tax
                   ContainerType=ContentArea }
 
       { 1900000002;1;Group  ;
-                  CaptionML=[CSY=Moznosti;
+                  CaptionML=[CSY=Mo§nosti;
                              DAN=Indstillinger;
                              DEU=Optionen;
                              ENU=Options;
@@ -83,10 +67,11 @@ OBJECT Report 70519 ForNAV Sales Templ. Sales Tax
                              ITS=Opzioni;
                              NLB=Opties] }
 
-      { 2   ;2   ;Field     ;
-                  CaptionML=ENU=No. of Copies;
-                  ToolTipML=ENU=Specifies how many copies of the document to print.;
-                  SourceExpr=NoOfCopies }
+      { 1   ;2   ;Field     ;
+                  CaptionML=ENU=Quantity;
+                  ToolTipML=ENU=Specifies the number of customers that will be included in the report.;
+                  ApplicationArea=#Basic,#Suite;
+                  SourceExpr=NoOfRecordsToPrint }
 
       { 5000;2   ;Field     ;
                   Name=ForNavOpenDesigner;
@@ -102,28 +87,13 @@ OBJECT Report 70519 ForNAV Sales Templ. Sales Tax
   CODE
   {
     VAR
-      ForNAVCheckDocumentDiscount@1000000000 : Codeunit 70000;
-      NoOfCopies@1000 : Integer;
+      NoOfRecordsToPrint@1000 : Integer;
+      i@1001 : Integer;
       ReportForNav@5000 : DotNet "'ForNav.Reports.2.0.0.1260, Version=2.0.0.1260, Culture=neutral, PublicKeyToken=5284c1af2984feb0'.ForNav.Report" WITHEVENTS;
       ReportForNavClient@5003 : DotNet "'ForNav.Reports.2.0.0.1260, Version=2.0.0.1260, Culture=neutral, PublicKeyToken=5284c1af2984feb0'.ForNav.Report" RUNONCLIENT;
       ReportForNavDialog@5001 : Dialog;
       ReportForNavOpenDesigner@5002 : Boolean;
       ReportForNavAllowDesign@5004 : Boolean INDATASET;
-
-    LOCAL PROCEDURE ChangeLanguage@1000000002(LanguageCode@1000000001 : Code[10]);
-    VAR
-      Language@1000000000 : Record 8;
-    BEGIN
-      CurrReport.LANGUAGE(Language.GetLanguageID(LanguageCode));
-    END;
-
-    LOCAL PROCEDURE GetSalesTaxDetails@1();
-    VAR
-      ForNAVGetSalesTaxDetails@1000 : Codeunit 70004;
-    BEGIN
-      SalesTaxBuffer.DELETEALL;
-      ForNAVGetSalesTaxDetails.GetSalesTax(Header, SalesTaxBuffer);
-    END;
 
     EVENT ReportForNav@5000::OnInit@5002();
     VAR
@@ -305,51 +275,14 @@ OBJECT Report 70519 ForNAV Sales Templ. Sales Tax
       END;
     END;
 
-    EVENT ReportForNav@5000::OnTotals@5004(DataItemId@1000 : Text;Operation@1001 : Text;GroupTotalFieldNo@1002 : Integer);
-    VAR
-      CurrRecRef@1003 : RecordRef;
-      NextRecRef@1004 : RecordRef;
-      CurrKeyRef@1005 : KeyRef;
-      NextKeyRef@1006 : KeyRef;
-      FieldIndex@1007 : Integer;
-      GroupFieldIndex@1008 : Integer;
     BEGIN
-      // Do not change (Autogenerated by Reports ForNAV) - Instead change the Create Totals, Total Fields or Group Total Fields properties on the Data item in the ForNAV designer
-      CASE DataItemId OF
-        'Header': WITH Header DO CASE Operation OF
-           'Add': BEGIN
-                ReportForNav.AddTotal(DataItemId,0,Amount);
-                ReportForNav.AddTotal(DataItemId,1,"Amount Including VAT");
-              END;
-           'Restore': BEGIN
-                 Amount := ReportForNav.RestoreTotal(DataItemId,0,GroupTotalFieldNo);
-                 "Amount Including VAT" := ReportForNav.RestoreTotal(DataItemId,1,GroupTotalFieldNo);
-              END;
-        END;  'Line': WITH Line DO CASE Operation OF
-           'Add': BEGIN
-                ReportForNav.AddTotal(DataItemId,0,Amount);
-              END;
-           'Restore': BEGIN
-                 Amount := ReportForNav.RestoreTotal(DataItemId,0,GroupTotalFieldNo);
-              END;
-        END;
-      END;
-    END;
-
-    BEGIN
-    {
-      Copyright (c) 2017 ForNAV ApS - All Rights Reserved
-      The intellectual work and technical concepts contained in this file are proprietary to ForNAV.
-      Unauthorized reverse engineering, distribution or copying of this file, parts hereof, or derived work, via any medium is strictly prohibited without written permission from ForNAV ApS.
-      This source code is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    }
     END.
   }
   RDLDATA
   {
     <?xml version="1.0" encoding="utf-8"?>
 <Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
-  <Description>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</Description>
+  <Description>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</Description>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
     <DataSource Name="DataSource">
@@ -358,7 +291,7 @@ OBJECT Report 70519 ForNAV Sales Templ. Sales Tax
         <ConnectString />
       </ConnectionProperties>
       <rd:SecurityType>None</rd:SecurityType>
-      <rd:DataSourceID>6038ae24-61f3-4345-8295-9e6137bd26b6</rd:DataSourceID>
+      <rd:DataSourceID>8b16f5df-a310-4d83-bb98-786d693b7f03</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <ReportSections>
@@ -374,7 +307,7 @@ OBJECT Report 70519 ForNAV Sales Templ. Sales Tax
     </ReportSection>
   </ReportSections>
   <rd:ReportUnitType>Invalid</rd:ReportUnitType>
-  <rd:ReportID>11e51b7d-0317-4137-a2d4-add320a61641</rd:ReportID>
+  <rd:ReportID>b688741a-60ed-446a-b56e-467ff5a3a5a2</rd:ReportID>
 </Report>
     END_OF_RDLDATA
   }

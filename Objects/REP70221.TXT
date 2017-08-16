@@ -1,0 +1,1095 @@
+OBJECT Report 70221 ForNAV Aged Accounts Payable
+{
+  OBJECT-PROPERTIES
+  {
+    Date=07/17/25;
+    Time=[ 5:34:03 PM];
+    Modified=Yes;
+    Version List=CTP5,NAVW16.00.01,FORNAV2.0.0.1260/1260;
+  }
+  PROPERTIES
+  {
+    CaptionML=ENU=Aged Accounts Payable;
+    OnInitReport=BEGIN
+                   ;ReportForNav:= ReportForNav.Report(CurrReport.OBJECTID,CurrReport.LANGUAGE,SERIALNUMBER,USERID,COMPANYNAME);ReportForNav.Init;
+                 END;
+
+    OnPreReport=BEGIN
+                  GLSetup.GET;
+                  CalcDates;
+                  CreateHeadings;
+                  ;ReportForNav.OpenDesigner:=ReportForNavOpenDesigner;IF NOT ReportForNav.Pre THEN CurrReport.QUIT;
+                END;
+
+    OnPostReport=BEGIN
+                   ;ReportForNav.Post;
+                 END;
+
+  }
+  DATASET
+  {
+    { 1   ;    ;DataItem;Vendor              ;
+               DataItemTable=Table23;
+               PrintOnlyIfDetail=Yes;
+               OnPreDataItem=BEGIN
+                               PageGroupNo := 1;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  IF NewPagePerVendor THEN
+                                    PageGroupNo := PageGroupNo + 1;
+                                  TempCurrency.RESET;
+                                  TempCurrency.DELETEALL;
+                                  TempVendorLedgEntry.RESET;
+                                  TempVendorLedgEntry.DELETEALL;
+                                END;
+
+               ReqFilterFields=No. }
+
+    { 2   ;1   ;Column  ;NewPagePerVendor    ;
+               IncludeCaption=No;
+               SourceExpr=NewPagePerVendor }
+
+    { 7   ;1   ;Column  ;STRSUBSTNO_Text007_SELECTSTR_AgingBy_1_Text009_;
+               IncludeCaption=No;
+               SourceExpr=STRSUBSTNO(Text007,SELECTSTR(AgingBy + 1,Text009)) }
+
+    { 8   ;1   ;Column  ;STRSUBSTNO_Text006_FORMAT_EndingDate_0_4_;
+               IncludeCaption=No;
+               SourceExpr=STRSUBSTNO(Text006,FORMAT(EndingDate,0,4)) }
+
+    { 9   ;1   ;Column  ;PrintAmountInLCY    ;
+               IncludeCaption=No;
+               SourceExpr=PrintAmountInLCY }
+
+    { 12  ;1   ;Column  ;AgingBy             ;
+               IncludeCaption=No;
+               SourceExpr=AgingBy }
+
+    { 14  ;1   ;Column  ;STRSUBSTNO_Text004_SELECTSTR_AgingBy_1_Text009_;
+               IncludeCaption=No;
+               SourceExpr=STRSUBSTNO(Text004,SELECTSTR(AgingBy + 1,Text009)) }
+
+    { 15  ;1   ;Column  ;PrintDetails        ;
+               IncludeCaption=No;
+               SourceExpr=PrintDetails }
+
+    { 16  ;1   ;Column  ;HeaderText_1        ;
+               IncludeCaption=No;
+               SourceExpr=HeaderText[1] }
+
+    { 17  ;1   ;Column  ;HeaderText_2        ;
+               IncludeCaption=No;
+               SourceExpr=HeaderText[2] }
+
+    { 18  ;1   ;Column  ;HeaderText_3        ;
+               IncludeCaption=No;
+               SourceExpr=HeaderText[3] }
+
+    { 19  ;1   ;Column  ;HeaderText_4        ;
+               IncludeCaption=No;
+               SourceExpr=HeaderText[4] }
+
+    { 20  ;1   ;Column  ;HeaderText_5        ;
+               IncludeCaption=No;
+               SourceExpr=HeaderText[5] }
+
+    { 23  ;1   ;Column  ;PageGroupNo         ;
+               IncludeCaption=No;
+               SourceExpr=PageGroupNo }
+
+    { 24  ;1   ;Column  ;Pct_GrandTotalVendorLedgEntry_5_Remaining_Amt_LCY_GrandTotal;
+               IncludeCaption=No;
+               SourceExpr=Pct(GrandTotalVendorLedgEntry[5]."Remaining Amt. (LCY)",GrandTotalVendorLedgEntry[1]."Amount (LCY)") }
+
+    { 25  ;1   ;Column  ;Pct_GrandTotalVendorLedgEntry_4_Remaining_Amt_LCY_GrandTotal;
+               IncludeCaption=No;
+               SourceExpr=Pct(GrandTotalVendorLedgEntry[4]."Remaining Amt. (LCY)",GrandTotalVendorLedgEntry[1]."Amount (LCY)") }
+
+    { 26  ;1   ;Column  ;Pct_GrandTotalVendorLedgEntry_3_Remaining_Amt_LCY_GrandTotal;
+               IncludeCaption=No;
+               SourceExpr=Pct(GrandTotalVendorLedgEntry[3]."Remaining Amt. (LCY)",GrandTotalVendorLedgEntry[1]."Amount (LCY)") }
+
+    { 27  ;1   ;Column  ;Pct_GrandTotalVendorLedgEntry_2_Remaining_Amt_LCY_GrandTotal;
+               IncludeCaption=No;
+               SourceExpr=Pct(GrandTotalVendorLedgEntry[2]."Remaining Amt. (LCY)",GrandTotalVendorLedgEntry[1]."Amount (LCY)") }
+
+    { 28  ;1   ;Column  ;Pct_GrandTotalVendorLedgEntry_1_Remaining_Amt_LCY_GrandTotal;
+               IncludeCaption=No;
+               SourceExpr=Pct(GrandTotalVendorLedgEntry[1]."Remaining Amt. (LCY)",GrandTotalVendorLedgEntry[1]."Amount (LCY)") }
+
+    { 29  ;1   ;Column  ;Original_Amount_Control47;
+               IncludeCaption=No;
+               SourceExpr=GrandTotalVendorLedgEntry[1]."Amount (LCY)";
+               AutoFormatType=1 }
+
+    { 30  ;1   ;Column  ;Original_Amount_Control46;
+               IncludeCaption=No;
+               SourceExpr=GrandTotalVendorLedgEntry[1]."Remaining Amt. (LCY)";
+               AutoFormatType=1 }
+
+    { 31  ;1   ;Column  ;Original_Amount_Control45;
+               IncludeCaption=No;
+               SourceExpr=GrandTotalVendorLedgEntry[2]."Remaining Amt. (LCY)";
+               AutoFormatType=1 }
+
+    { 32  ;1   ;Column  ;Original_Amount_Control44;
+               IncludeCaption=No;
+               SourceExpr=GrandTotalVendorLedgEntry[3]."Remaining Amt. (LCY)";
+               AutoFormatType=1 }
+
+    { 33  ;1   ;Column  ;Original_Amount_Control43;
+               IncludeCaption=No;
+               SourceExpr=GrandTotalVendorLedgEntry[4]."Remaining Amt. (LCY)";
+               AutoFormatType=1 }
+
+    { 34  ;1   ;Column  ;Original_Amount     ;
+               IncludeCaption=No;
+               SourceExpr=GrandTotalVendorLedgEntry[5]."Remaining Amt. (LCY)";
+               AutoFormatType=1 }
+
+    { 35  ;1   ;DataItem;                    ;
+               DataItemTable=Table25;
+               DataItemTableView=SORTING(Vendor No.,Posting Date,Currency Code);
+               PrintOnlyIfDetail=Yes;
+               OnPreDataItem=BEGIN
+                               SETRANGE("Posting Date",EndingDate + 1,12319999D);
+                             END;
+
+               OnAfterGetRecord=VAR
+                                  VendorLedgEntry@1000 : Record 25;
+                                BEGIN
+                                  VendorLedgEntry.SETCURRENTKEY("Closed by Entry No.");
+                                  VendorLedgEntry.SETRANGE("Closed by Entry No.","Entry No.");
+                                  VendorLedgEntry.SETRANGE("Posting Date",0D,EndingDate);
+                                  IF VendorLedgEntry.FINDSET(FALSE,FALSE) THEN
+                                    REPEAT
+                                      InsertTemp(VendorLedgEntry);
+                                    UNTIL VendorLedgEntry.NEXT = 0;
+                                  IF "Closed by Entry No." <> 0 THEN BEGIN
+                                    VendorLedgEntry.SETRANGE("Closed by Entry No.","Closed by Entry No.");
+                                    IF VendorLedgEntry.FINDSET(FALSE,FALSE) THEN
+                                      REPEAT
+                                        InsertTemp(VendorLedgEntry);
+                                      UNTIL VendorLedgEntry.NEXT = 0;
+                                  END;
+                                  VendorLedgEntry.RESET;
+                                  VendorLedgEntry.SETRANGE("Entry No.","Closed by Entry No.");
+                                  VendorLedgEntry.SETRANGE("Posting Date",0D,EndingDate);
+                                  IF VendorLedgEntry.FINDSET(FALSE,FALSE) THEN
+                                    REPEAT
+                                      InsertTemp(VendorLedgEntry);
+                                    UNTIL VendorLedgEntry.NEXT = 0;
+                                  CurrReport.SKIP;
+                                END;
+
+               DataItemLink=Vendor No.=FIELD(No.) }
+
+    { 36  ;1   ;DataItem;OpenVendorLedgEntry ;
+               DataItemTable=Table25;
+               DataItemTableView=SORTING(Vendor No.,Open,Positive,Due Date,Currency Code);
+               PrintOnlyIfDetail=Yes;
+               OnPreDataItem=BEGIN
+                               IF AgingBy = AgingBy::"Posting Date" THEN BEGIN
+                                 SETRANGE("Posting Date",0D,EndingDate);
+                                 SETRANGE("Date Filter",0D,EndingDate);
+                               END
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  IF AgingBy = AgingBy::"Posting Date" THEN BEGIN
+                                    CALCFIELDS("Remaining Amt. (LCY)");
+                                    IF "Remaining Amt. (LCY)" = 0 THEN
+                                      CurrReport.SKIP;
+                                  END;
+                                  InsertTemp(OpenVendorLedgEntry);
+                                  CurrReport.SKIP;
+                                END;
+
+               DataItemLink=Vendor No.=FIELD(No.) }
+
+    { 37  ;1   ;DataItem;CurrencyLoop        ;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number)
+                                 WHERE(Number=FILTER(1..));
+               PrintOnlyIfDetail=Yes;
+               OnPreDataItem=BEGIN
+                               NumberOfCurrencies := 0;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  CLEAR(TotalVendorLedgEntry);
+                                  IF Number = 1 THEN BEGIN
+                                    IF NOT TempCurrency.FINDSET(FALSE,FALSE) THEN
+                                      CurrReport.BREAK;
+                                  END ELSE
+                                    IF TempCurrency.NEXT = 0 THEN
+                                      CurrReport.BREAK;
+                                  IF TempCurrency.Code <> '' THEN
+                                    CurrencyCode := TempCurrency.Code
+                                  ELSE
+                                    CurrencyCode := GLSetup."LCY Code";
+                                  NumberOfCurrencies := NumberOfCurrencies + 1;
+                                END;
+
+               OnPostDataItem=BEGIN
+                                IF NewPagePerVendor AND (NumberOfCurrencies > 0) THEN
+                                  ReportForNav.NewPageWithoutTransportTotals;
+                              END;
+                               }
+
+    { 38  ;2   ;DataItem;TempVendortLedgEntryLoop;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number)
+                                 WHERE(Number=FILTER(1..));
+               OnPreDataItem=BEGIN
+                               IF NOT PrintAmountInLCY THEN
+                                 TempVendorLedgEntry.SETRANGE("Currency Code",TempCurrency.Code);
+                             END;
+
+               OnAfterGetRecord=VAR
+                                  PeriodIndex@1001 : Integer;
+                                BEGIN
+                                  IF Number = 1 THEN BEGIN
+                                    IF NOT TempVendorLedgEntry.FINDSET(FALSE,FALSE) THEN
+                                      CurrReport.BREAK;
+                                  END ELSE
+                                    IF TempVendorLedgEntry.NEXT = 0 THEN
+                                      CurrReport.BREAK;
+                                  VendorLedgEntryEndingDate := TempVendorLedgEntry;
+                                  DetailedVendorLedgerEntry.SETRANGE("Vendor Ledger Entry No.",VendorLedgEntryEndingDate."Entry No.");
+                                  IF DetailedVendorLedgerEntry.FINDSET(FALSE,FALSE) THEN
+                                    REPEAT
+                                      IF (DetailedVendorLedgerEntry."Entry Type" =
+                                          DetailedVendorLedgerEntry."Entry Type"::"Initial Entry") AND
+                                         (VendorLedgEntryEndingDate."Posting Date" > EndingDate) AND
+                                         (AgingBy <> AgingBy::"Posting Date")
+                                      THEN BEGIN
+                                        IF VendorLedgEntryEndingDate."Document Date" <= EndingDate THEN
+                                          DetailedVendorLedgerEntry."Posting Date" :=
+                                            VendorLedgEntryEndingDate."Document Date"
+                                        ELSE
+                                          IF (VendorLedgEntryEndingDate."Due Date" <= EndingDate) AND
+                                             (AgingBy = AgingBy::"Due Date")
+                                          THEN
+                                            DetailedVendorLedgerEntry."Posting Date" :=
+                                              VendorLedgEntryEndingDate."Due Date"
+                                      END;
+                                      IF (DetailedVendorLedgerEntry."Posting Date" <= EndingDate) OR
+                                         (TempVendorLedgEntry.Open AND
+                                          (AgingBy = AgingBy::"Due Date") AND
+                                          (VendorLedgEntryEndingDate."Due Date" > EndingDate)) THEN BEGIN
+                                        IF DetailedVendorLedgerEntry."Entry Type" IN
+                                           [DetailedVendorLedgerEntry."Entry Type"::"Initial Entry",
+                                            DetailedVendorLedgerEntry."Entry Type"::"Unrealized Loss",
+                                            DetailedVendorLedgerEntry."Entry Type"::"Unrealized Gain",
+                                            DetailedVendorLedgerEntry."Entry Type"::"Realized Loss",
+                                            DetailedVendorLedgerEntry."Entry Type"::"Realized Gain",
+                                            DetailedVendorLedgerEntry."Entry Type"::"Payment Discount",
+                                            DetailedVendorLedgerEntry."Entry Type"::"Payment Discount (VAT Excl.)",
+                                            DetailedVendorLedgerEntry."Entry Type"::"Payment Discount (VAT Adjustment)",
+                                            DetailedVendorLedgerEntry."Entry Type"::"Payment Tolerance",
+                                            DetailedVendorLedgerEntry."Entry Type"::"Payment Discount Tolerance",
+                                            DetailedVendorLedgerEntry."Entry Type"::"Payment Tolerance (VAT Excl.)",
+                                            DetailedVendorLedgerEntry."Entry Type"::"Payment Tolerance (VAT Adjustment)",
+                                            DetailedVendorLedgerEntry."Entry Type"::"Payment Discount Tolerance (VAT Excl.)",
+                                            DetailedVendorLedgerEntry."Entry Type"::"Payment Discount Tolerance (VAT Adjustment)"]
+                                        THEN BEGIN
+                                          VendorLedgEntryEndingDate.Amount := VendorLedgEntryEndingDate.Amount + DetailedVendorLedgerEntry.Amount;
+                                          VendorLedgEntryEndingDate."Amount (LCY)" :=
+                                            VendorLedgEntryEndingDate."Amount (LCY)" + DetailedVendorLedgerEntry."Amount (LCY)";
+                                        END;
+                                        VendorLedgEntryEndingDate."Remaining Amount" :=
+                                          VendorLedgEntryEndingDate."Remaining Amount" + DetailedVendorLedgerEntry.Amount;
+                                        VendorLedgEntryEndingDate."Remaining Amt. (LCY)" :=
+                                          VendorLedgEntryEndingDate."Remaining Amt. (LCY)" + DetailedVendorLedgerEntry."Amount (LCY)";
+                                      END;
+                                    UNTIL DetailedVendorLedgerEntry.NEXT = 0;
+                                  IF VendorLedgEntryEndingDate."Remaining Amount" = 0 THEN
+                                    CurrReport.SKIP;
+                                  CASE AgingBy OF
+                                    AgingBy::"Due Date":
+                                      PeriodIndex := GetPeriodIndex(VendorLedgEntryEndingDate."Due Date");
+                                    AgingBy::"Posting Date":
+                                      PeriodIndex := GetPeriodIndex(VendorLedgEntryEndingDate."Posting Date");
+                                    AgingBy::"Document Date":
+                                      BEGIN
+                                        IF VendorLedgEntryEndingDate."Document Date" > EndingDate THEN BEGIN
+                                          VendorLedgEntryEndingDate."Remaining Amount" := 0;
+                                          VendorLedgEntryEndingDate."Remaining Amt. (LCY)" := 0;
+                                          VendorLedgEntryEndingDate."Document Date" := VendorLedgEntryEndingDate."Posting Date";
+                                        END;
+                                        PeriodIndex := GetPeriodIndex(VendorLedgEntryEndingDate."Document Date");
+                                      END;
+                                  END;
+                                  CLEAR(AgedVendorLedgEntry);
+                                  AgedVendorLedgEntry[PeriodIndex]."Remaining Amount" := VendorLedgEntryEndingDate."Remaining Amount";
+                                  AgedVendorLedgEntry[PeriodIndex]."Remaining Amt. (LCY)" := VendorLedgEntryEndingDate."Remaining Amt. (LCY)";
+                                  TotalVendorLedgEntry[PeriodIndex]."Remaining Amount" += VendorLedgEntryEndingDate."Remaining Amount";
+                                  TotalVendorLedgEntry[PeriodIndex]."Remaining Amt. (LCY)" += VendorLedgEntryEndingDate."Remaining Amt. (LCY)";
+                                  GrandTotalVendorLedgEntry[PeriodIndex]."Remaining Amt. (LCY)" += VendorLedgEntryEndingDate."Remaining Amt. (LCY)";
+                                  TotalVendorLedgEntry[1].Amount += VendorLedgEntryEndingDate."Remaining Amount";
+                                  TotalVendorLedgEntry[1]."Amount (LCY)" += VendorLedgEntryEndingDate."Remaining Amt. (LCY)";
+                                  GrandTotalVendorLedgEntry[1]."Amount (LCY)" += VendorLedgEntryEndingDate."Remaining Amt. (LCY)";
+                                END;
+
+               OnPostDataItem=BEGIN
+                                IF NOT PrintAmountInLCY THEN
+                                  UpdateCurrencyTotals;
+                              END;
+                               }
+
+    { 41  ;3   ;Column  ;VendorLedgEntryEndingDate_Posting_Date;
+               IncludeCaption=No;
+               SourceExpr=FORMAT(VendorLedgEntryEndingDate."Posting Date") }
+
+    { 42  ;3   ;Column  ;VendorLedgEntryEndingDate_Document_Type;
+               IncludeCaption=No;
+               SourceExpr=FORMAT(VendorLedgEntryEndingDate."Document Type") }
+
+    { 43  ;3   ;Column  ;VendorLedgEntryEndingDate_Document_No_;
+               IncludeCaption=No;
+               SourceExpr=VendorLedgEntryEndingDate."Document No." }
+
+    { 44  ;3   ;Column  ;VendorLedgEntryEndingDate_Due_Date;
+               IncludeCaption=No;
+               SourceExpr=FORMAT(VendorLedgEntryEndingDate."Due Date") }
+
+    { 45  ;3   ;Column  ;VendorLedgEntryEndingDate_Amount_LCY_;
+               IncludeCaption=No;
+               SourceExpr=VendorLedgEntryEndingDate."Amount (LCY)";
+               AutoFormatType=1 }
+
+    { 46  ;3   ;Column  ;Original_Amount_Control63;
+               IncludeCaption=No;
+               SourceExpr=AgedVendorLedgEntry[5]."Remaining Amt. (LCY)";
+               AutoFormatType=1 }
+
+    { 47  ;3   ;Column  ;Original_Amount_Control62;
+               IncludeCaption=No;
+               SourceExpr=AgedVendorLedgEntry[4]."Remaining Amt. (LCY)";
+               AutoFormatType=1 }
+
+    { 48  ;3   ;Column  ;Original_Amount_Control61;
+               IncludeCaption=No;
+               SourceExpr=AgedVendorLedgEntry[3]."Remaining Amt. (LCY)";
+               AutoFormatType=1 }
+
+    { 49  ;3   ;Column  ;Original_Amount_Control60;
+               IncludeCaption=No;
+               SourceExpr=AgedVendorLedgEntry[2]."Remaining Amt. (LCY)";
+               AutoFormatType=1 }
+
+    { 50  ;3   ;Column  ;Original_Amount_Control59;
+               IncludeCaption=No;
+               SourceExpr=AgedVendorLedgEntry[1]."Remaining Amt. (LCY)";
+               AutoFormatType=1 }
+
+    { 51  ;3   ;Column  ;Original_Amount_Control58;
+               IncludeCaption=No;
+               SourceExpr=VendorLedgEntryEndingDate."Remaining Amt. (LCY)";
+               AutoFormatType=1 }
+
+    { 52  ;3   ;Column  ;VendorLedgEntryEndingDate_Amount;
+               IncludeCaption=No;
+               SourceExpr=VendorLedgEntryEndingDate.Amount;
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 53  ;3   ;Column  ;Original_Amount_Control94;
+               IncludeCaption=No;
+               SourceExpr=VendorLedgEntryEndingDate."Remaining Amount";
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 54  ;3   ;Column  ;Original_Amount_Control93;
+               IncludeCaption=No;
+               SourceExpr=AgedVendorLedgEntry[1]."Remaining Amount";
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 55  ;3   ;Column  ;Original_Amount_Control92;
+               IncludeCaption=No;
+               SourceExpr=AgedVendorLedgEntry[2]."Remaining Amount";
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 56  ;3   ;Column  ;Original_Amount_Control91;
+               IncludeCaption=No;
+               SourceExpr=AgedVendorLedgEntry[3]."Remaining Amount";
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 57  ;3   ;Column  ;Original_Amount_Control90;
+               IncludeCaption=No;
+               SourceExpr=AgedVendorLedgEntry[4]."Remaining Amount";
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 58  ;3   ;Column  ;Original_Amount_Control89;
+               IncludeCaption=No;
+               SourceExpr=AgedVendorLedgEntry[5]."Remaining Amount";
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 59  ;3   ;Column  ;Original_Amount_Control88;
+               IncludeCaption=No;
+               SourceExpr=TotalVendorLedgEntry[5]."Remaining Amt. (LCY)";
+               AutoFormatType=1 }
+
+    { 60  ;3   ;Column  ;Original_Amount_Control87;
+               IncludeCaption=No;
+               SourceExpr=TotalVendorLedgEntry[4]."Remaining Amt. (LCY)";
+               AutoFormatType=1 }
+
+    { 61  ;3   ;Column  ;Original_Amount_Control86;
+               IncludeCaption=No;
+               SourceExpr=TotalVendorLedgEntry[3]."Remaining Amt. (LCY)";
+               AutoFormatType=1 }
+
+    { 62  ;3   ;Column  ;Original_Amount_Control85;
+               IncludeCaption=No;
+               SourceExpr=TotalVendorLedgEntry[2]."Remaining Amt. (LCY)";
+               AutoFormatType=1 }
+
+    { 63  ;3   ;Column  ;Original_Amount_Control84;
+               IncludeCaption=No;
+               SourceExpr=TotalVendorLedgEntry[1]."Remaining Amt. (LCY)";
+               AutoFormatType=1 }
+
+    { 64  ;3   ;Column  ;Original_Amount_Control83;
+               IncludeCaption=No;
+               SourceExpr=TotalVendorLedgEntry[1]."Amount (LCY)";
+               AutoFormatType=1 }
+
+    { 65  ;3   ;Column  ;STRSUBSTNO_Text005_Vendor_Name;
+               IncludeCaption=No;
+               SourceExpr=STRSUBSTNO(Text005,Vendor.Name) }
+
+    { 66  ;3   ;Column  ;Original_Amount_Control107;
+               IncludeCaption=No;
+               SourceExpr=TotalVendorLedgEntry[1].Amount;
+               AutoFormatType=1 }
+
+    { 67  ;3   ;Column  ;Original_Amount_Control106;
+               IncludeCaption=No;
+               SourceExpr=TotalVendorLedgEntry[1]."Remaining Amount";
+               AutoFormatType=1 }
+
+    { 68  ;3   ;Column  ;Original_Amount_Control105;
+               IncludeCaption=No;
+               SourceExpr=TotalVendorLedgEntry[2]."Remaining Amount";
+               AutoFormatType=1 }
+
+    { 69  ;3   ;Column  ;Original_Amount_Control104;
+               IncludeCaption=No;
+               SourceExpr=TotalVendorLedgEntry[3]."Remaining Amount";
+               AutoFormatType=1 }
+
+    { 70  ;3   ;Column  ;Original_Amount_Control103;
+               IncludeCaption=No;
+               SourceExpr=TotalVendorLedgEntry[4]."Remaining Amount";
+               AutoFormatType=1 }
+
+    { 71  ;3   ;Column  ;Original_Amount_Control102;
+               IncludeCaption=No;
+               SourceExpr=TotalVendorLedgEntry[5]."Remaining Amount";
+               AutoFormatType=1 }
+
+    { 72  ;3   ;Column  ;Original_Amount_Control100;
+               IncludeCaption=No;
+               SourceExpr=CurrencyCode;
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 73  ;3   ;Column  ;Original_Amount_Control29;
+               IncludeCaption=No;
+               SourceExpr=TotalVendorLedgEntry[5]."Remaining Amount";
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 74  ;3   ;Column  ;Original_Amount_Control28;
+               IncludeCaption=No;
+               SourceExpr=TotalVendorLedgEntry[4]."Remaining Amount";
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 75  ;3   ;Column  ;Original_Amount_Control27;
+               IncludeCaption=No;
+               SourceExpr=TotalVendorLedgEntry[3]."Remaining Amount";
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 76  ;3   ;Column  ;Original_Amount_Control26;
+               IncludeCaption=No;
+               SourceExpr=TotalVendorLedgEntry[2]."Remaining Amount";
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 77  ;3   ;Column  ;Original_Amount_Control25;
+               IncludeCaption=No;
+               SourceExpr=TotalVendorLedgEntry[1]."Remaining Amount";
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 78  ;3   ;Column  ;Original_Amount_Control24;
+               IncludeCaption=No;
+               SourceExpr=TotalVendorLedgEntry[1].Amount;
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 79  ;    ;DataItem;CurrencyTotals      ;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number)
+                                 WHERE(Number=FILTER(1..));
+               OnPreDataItem=BEGIN
+                               PageGroupNo := 0;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  IF Number = 1 THEN BEGIN
+                                    IF NOT TempCurrency2.FINDSET(FALSE,FALSE) THEN
+                                      CurrReport.BREAK;
+                                  END ELSE
+                                    IF TempCurrency2.NEXT = 0 THEN
+                                      CurrReport.BREAK;
+                                  CLEAR(AgedVendorLedgEntry);
+                                  TempCurrencyAmount.SETRANGE("Currency Code",TempCurrency2.Code);
+                                  IF TempCurrencyAmount.FINDSET(FALSE,FALSE) THEN
+                                    REPEAT
+                                      IF TempCurrencyAmount.Date <> 12319999D THEN
+                                        AgedVendorLedgEntry[GetPeriodIndex(TempCurrencyAmount.Date)]."Remaining Amount" :=
+                                          TempCurrencyAmount.Amount
+                                      ELSE
+                                        AgedVendorLedgEntry[6]."Remaining Amount" := TempCurrencyAmount.Amount;
+                                    UNTIL TempCurrencyAmount.NEXT = 0;
+                                END;
+                                 }
+
+    { 81  ;1   ;Column  ;CurrencyTotals_Number;
+               IncludeCaption=No;
+               SourceExpr=Number }
+
+    { 82  ;1   ;Column  ;Original_Amount_Control124;
+               IncludeCaption=No;
+               SourceExpr=AgedVendorLedgEntry[5]."Remaining Amount";
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 83  ;1   ;Column  ;Original_Amount_Control123;
+               IncludeCaption=No;
+               SourceExpr=AgedVendorLedgEntry[4]."Remaining Amount";
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 84  ;1   ;Column  ;Original_Amount_Control122;
+               IncludeCaption=No;
+               SourceExpr=AgedVendorLedgEntry[3]."Remaining Amount";
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 85  ;1   ;Column  ;Original_Amount_Control121;
+               IncludeCaption=No;
+               SourceExpr=AgedVendorLedgEntry[2]."Remaining Amount";
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 86  ;1   ;Column  ;Original_Amount_Control120;
+               IncludeCaption=No;
+               SourceExpr=AgedVendorLedgEntry[1]."Remaining Amount";
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 87  ;1   ;Column  ;Original_Amount_Control119;
+               IncludeCaption=No;
+               SourceExpr=AgedVendorLedgEntry[6]."Remaining Amount";
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+    { 88  ;1   ;Column  ;Original_Amount_Control117;
+               IncludeCaption=No;
+               SourceExpr=TempCurrency2.Code;
+               AutoFormatType=1;
+               AutoFormatExpr=CurrencyCode }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+      SaveValues=Yes;
+      OnOpenPage=BEGIN
+                   IF EndingDate = 0D THEN
+                     EndingDate := WORKDATE;
+                 END;
+
+    }
+    CONTROLS
+    {
+      { 1900000001;0;Container;
+                  ContainerType=ContentArea }
+
+      { 1900000002;1;Group  ;
+                  CaptionML=[CSY=Mo§nosti;
+                             DAN=Indstillinger;
+                             DEU=Optionen;
+                             ENU=Options;
+                             FIN=Vaihtoehdot;
+                             ISL=Valkostir;
+                             NLD=Opties;
+                             NOR=Alternativer;
+                             SVE=Alternativ;
+                             ITS=Opzioni;
+                             NLB=Opties] }
+
+      { 1   ;2   ;Field     ;
+                  CaptionML=ENU=Aged As Of;
+                  SourceExpr=EndingDate }
+
+      { 3   ;2   ;Field     ;
+                  CaptionML=ENU=Aging by;
+                  OptionCaptionML=ENU=Due Date,Posting Date,Document Date;
+                  SourceExpr=AgingBy }
+
+      { 7   ;2   ;Field     ;
+                  CaptionML=ENU=Period Length;
+                  SourceExpr=PeriodLength }
+
+      { 9   ;2   ;Field     ;
+                  CaptionML=ENU=Print Amounts in LCY;
+                  SourceExpr=PrintAmountInLCY }
+
+      { 11  ;2   ;Field     ;
+                  CaptionML=ENU=Print Details;
+                  SourceExpr=PrintDetails }
+
+      { 15  ;2   ;Field     ;
+                  CaptionML=ENU=Heading Type;
+                  OptionCaptionML=ENU=Date Interval,Number of Days;
+                  SourceExpr=HeadingType }
+
+      { 13  ;2   ;Field     ;
+                  CaptionML=ENU=New Page per Vendor;
+                  SourceExpr=NewPagePerVendor }
+
+      { 5000;2   ;Field     ;
+                  Name=ForNavOpenDesigner;
+                  CaptionML=ENU=Open Designer;
+                  SourceExpr=ReportForNavOpenDesigner;
+                  Visible=ReportForNavAllowDesign }
+
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      GLSetup@1011 : Record 98;
+      TempVendorLedgEntry@1009 : TEMPORARY Record 25;
+      VendorLedgEntryEndingDate@1013 : Record 25;
+      TotalVendorLedgEntry@1014 : ARRAY [5] OF Record 25;
+      GrandTotalVendorLedgEntry@1018 : ARRAY [5] OF Record 25;
+      AgedVendorLedgEntry@1022 : ARRAY [6] OF Record 25;
+      TempCurrency@1010 : TEMPORARY Record 4;
+      TempCurrency2@1030 : TEMPORARY Record 4;
+      TempCurrencyAmount@1029 : TEMPORARY Record 264;
+      DetailedVendorLedgerEntry@1102601000 : Record 380;
+      PrintAmountInLCY@1012 : Boolean;
+      EndingDate@1001 : Date;
+      AgingBy@1002 : 'Due Date,Posting Date,Document Date';
+      PeriodLength@1003 : DateFormula;
+      PrintDetails@1015 : Boolean;
+      HeadingType@1019 : 'Date Interval,Number of Days';
+      NewPagePerVendor@1027 : Boolean;
+      PeriodStartDate@1004 : ARRAY [5] OF Date;
+      PeriodEndDate@1005 : ARRAY [5] OF Date;
+      HeaderText@1006 : ARRAY [5] OF Text[30];
+      Text000@1007 : TextConst 'ENU=Not Due';
+      Text001@1008 : TextConst 'ENU=Before';
+      CurrencyCode@1016 : Code[10];
+      Text002@1020 : TextConst 'ENU=days';
+      Text003@1021 : TextConst 'ENU=More than';
+      Text004@1017 : TextConst 'ENU=Aged by %1';
+      Text005@1023 : TextConst 'ENU=Total for %1';
+      Text006@1024 : TextConst 'ENU=Aged as of %1';
+      Text007@1025 : TextConst 'ENU=Aged by %1';
+      NumberOfCurrencies@1028 : Integer;
+      Text009@1031 : TextConst 'ENU=Due Date,Posting Date,Document Date';
+      Text010@1032 : TextConst 'ENU=The Date Formula %1 cannot be used. Try to restate it. E.g. 1M+CM instead of CM+1M.';
+      PageGroupNo@1033 : Integer;
+      Text011@1026 : TextConst 'ENU=Enter a date formula in the Period Length field.';
+      ReportForNav@5000 : DotNet "'ForNav.Reports.2.0.0.1260, Version=2.0.0.1260, Culture=neutral, PublicKeyToken=5284c1af2984feb0'.ForNav.Report" WITHEVENTS;
+      ReportForNavClient@5003 : DotNet "'ForNav.Reports.2.0.0.1260, Version=2.0.0.1260, Culture=neutral, PublicKeyToken=5284c1af2984feb0'.ForNav.Report" RUNONCLIENT;
+      ReportForNavDialog@5001 : Dialog;
+      ReportForNavOpenDesigner@5002 : Boolean;
+      ReportForNavAllowDesign@5004 : Boolean INDATASET;
+
+    LOCAL PROCEDURE CalcDates@5();
+    VAR
+      i@1000 : Integer;
+      PeriodLength2@1001 : DateFormula;
+    BEGIN
+      IF NOT EVALUATE(PeriodLength2,'-' + FORMAT(PeriodLength)) THEN
+        ERROR(Text011);
+      IF AgingBy = AgingBy::"Due Date" THEN BEGIN
+        PeriodEndDate[1] := 12319999D;
+        PeriodStartDate[1] := EndingDate + 1;
+      END ELSE BEGIN
+        PeriodEndDate[1] := EndingDate;
+        PeriodStartDate[1] := CALCDATE(PeriodLength2,EndingDate + 1);
+      END;
+      FOR i := 2 TO ARRAYLEN(PeriodEndDate) DO BEGIN
+        PeriodEndDate[i] := PeriodStartDate[i - 1] - 1;
+        PeriodStartDate[i] := CALCDATE(PeriodLength2,PeriodEndDate[i] + 1);
+      END;
+      IF ISSERVICETIER THEN
+        i := ARRAYLEN(PeriodEndDate);
+      PeriodStartDate[i] := 0D;
+      FOR i := 1 TO ARRAYLEN(PeriodEndDate) DO
+        IF PeriodEndDate[i] < PeriodStartDate[i] THEN
+          ERROR(Text010,PeriodLength);
+    END;
+
+    LOCAL PROCEDURE CreateHeadings@10();
+    VAR
+      i@1000 : Integer;
+    BEGIN
+      IF AgingBy = AgingBy::"Due Date" THEN BEGIN
+        HeaderText[1] := Text000;
+        i := 2;
+      END ELSE
+        i := 1;
+      WHILE i < ARRAYLEN(PeriodEndDate) DO BEGIN
+        IF HeadingType = HeadingType::"Date Interval" THEN
+          HeaderText[i] := STRSUBSTNO('%1\..%2',PeriodStartDate[i],PeriodEndDate[i])
+        ELSE
+          HeaderText[i] :=
+            STRSUBSTNO('%1 - %2 %3',EndingDate - PeriodEndDate[i] + 1,EndingDate - PeriodStartDate[i] + 1,Text002);
+        i := i + 1;
+      END;
+      IF HeadingType = HeadingType::"Date Interval" THEN
+        HeaderText[i] := STRSUBSTNO('%1\%2',Text001,PeriodStartDate[i - 1])
+      ELSE
+        HeaderText[i] := STRSUBSTNO('%1\%2 %3',Text003,EndingDate - PeriodStartDate[i - 1] + 1,Text002);
+    END;
+
+    LOCAL PROCEDURE InsertTemp@1(VAR VendorLedgEntry@1040000 : Record 25);
+    VAR
+      Currency@1000 : Record 4;
+    BEGIN
+      WITH TempVendorLedgEntry DO BEGIN
+        IF GET(VendorLedgEntry."Entry No.") THEN
+          EXIT;
+        TempVendorLedgEntry := VendorLedgEntry;
+        INSERT;
+        IF PrintAmountInLCY THEN BEGIN
+          CLEAR(TempCurrency);
+          TempCurrency."Amount Rounding Precision" := GLSetup."Amount Rounding Precision";
+          IF TempCurrency.INSERT THEN;
+          EXIT;
+        END;
+        IF TempCurrency.GET("Currency Code") THEN
+          EXIT;
+        IF "Currency Code" <> '' THEN
+          Currency.GET("Currency Code")
+        ELSE BEGIN
+          CLEAR(Currency);
+          Currency."Amount Rounding Precision" := GLSetup."Amount Rounding Precision";
+        END;
+        TempCurrency := Currency;
+        TempCurrency.INSERT;
+      END;
+    END;
+
+    LOCAL PROCEDURE GetPeriodIndex@8(Date@1040000 : Date) : Integer;
+    VAR
+      i@1000 : Integer;
+    BEGIN
+      FOR i := 1 TO ARRAYLEN(PeriodEndDate) DO
+        IF Date IN [PeriodStartDate[i]..PeriodEndDate[i]] THEN
+          EXIT(i);
+    END;
+
+    LOCAL PROCEDURE Pct@2(a@1000 : Decimal;b@1001 : Decimal) : Text[30];
+    BEGIN
+      IF b <> 0 THEN
+        EXIT(FORMAT(ROUND(100 * a / b,0.1),0,'<Sign><Integer><Decimals,2>') + '%');
+    END;
+
+    LOCAL PROCEDURE UpdateCurrencyTotals@7();
+    VAR
+      i@1000 : Integer;
+    BEGIN
+      TempCurrency2.Code := CurrencyCode;
+      IF TempCurrency2.INSERT THEN;
+      WITH TempCurrencyAmount DO BEGIN
+        FOR i := 1 TO ARRAYLEN(TotalVendorLedgEntry) DO BEGIN
+          "Currency Code" := CurrencyCode;
+          Date := PeriodStartDate[i];
+          IF FIND THEN BEGIN
+            Amount := Amount + TotalVendorLedgEntry[i]."Remaining Amount";
+            MODIFY;
+          END ELSE BEGIN
+            "Currency Code" := CurrencyCode;
+            Date := PeriodStartDate[i];
+            Amount := TotalVendorLedgEntry[i]."Remaining Amount";
+            INSERT;
+          END;
+        END;
+        "Currency Code" := CurrencyCode;
+        Date := 12319999D;
+        IF FIND THEN BEGIN
+          Amount := Amount + TotalVendorLedgEntry[1].Amount;
+          MODIFY;
+        END ELSE BEGIN
+          "Currency Code" := CurrencyCode;
+          Date := 12319999D;
+          Amount := TotalVendorLedgEntry[1].Amount;
+          INSERT;
+        END;
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnInit@5002();
+    VAR
+      ReportLayoutSelection@1000 : Record 9651;
+      CustomReportLayout@1001 : Record 9650;
+      CustomLayoutID@1002 : Variant;
+      InStream@1004 : InStream;
+      EmptyLayout@1003 : Text;
+    BEGIN
+      EmptyLayout := FORMAT(ReportLayoutSelection."Custom Report Layout Code");
+      CustomLayoutID := ReportLayoutSelection."Custom Report Layout Code";
+      ReportForNav.OData := GETURL(CLIENTTYPE::OData, COMPANYNAME, OBJECTTYPE::Page, 7702);
+      IF FORMAT(ReportLayoutSelection.GetTempLayoutSelected) <> EmptyLayout THEN
+        CustomLayoutID := ReportLayoutSelection.GetTempLayoutSelected
+      ELSE
+        IF ReportLayoutSelection.HasCustomLayout(ReportForNav.ReportID) = 1 THEN
+          CustomLayoutID := ReportLayoutSelection."Custom Report Layout Code";
+
+      IF (FORMAT(CustomLayoutID) <> EmptyLayout) AND CustomReportLayout.GET(CustomLayoutID) THEN BEGIN
+        CustomReportLayout.TESTFIELD(Type,CustomReportLayout.Type::RDLC);
+        CustomReportLayout.CALCFIELDS(Layout);
+        CustomReportLayout.Layout.CREATEINSTREAM(InStream,TEXTENCODING::UTF8);
+        ReportForNav.IsCustomLayout := TRUE;
+      END ELSE
+        REPORT.RDLCLAYOUT(ReportForNav.ReportID,InStream);
+
+      ReportForNav.LoadRdlc(InStream);
+      IF COPYSTR(LOWERCASE(GETURL(CLIENTTYPE::Current, COMPANYNAME, OBJECTTYPE::Codeunit, 1)), 1, 14) = 'dynamicsnav://' THEN BEGIN
+        ReportForNav.CheckClientAddIn();
+        ReportForNavClient := ReportForNavClient.Report(ReportForNav.Definition);
+        ReportForNavAllowDesign := ReportForNavClient.HasDesigner AND NOT ReportForNav.ParameterMode;
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnSave@5010(Base64Layout@1000 : Text);
+    VAR
+      CustomReportLayout@1002 : Record 9650;
+      ReportLayoutSelection@1003 : Record 9651;
+      LayoutId@1004 : Variant;
+      TempBlob@1007 : Record 99008535;
+      OutStream@1006 : OutStream;
+      Bstr@1005 : BigText;
+      EmptyLayout@1001 : Text;
+    BEGIN
+      EmptyLayout := FORMAT(ReportLayoutSelection."Custom Report Layout Code");
+      LayoutId := ReportLayoutSelection."Custom Report Layout Code";
+      IF ReportLayoutSelection.HasCustomLayout(ReportForNav.ReportID) = 1 THEN BEGIN
+        IF FORMAT(ReportLayoutSelection.GetTempLayoutSelected) <> EmptyLayout THEN BEGIN
+          LayoutId := ReportLayoutSelection.GetTempLayoutSelected;
+        END ELSE BEGIN
+          IF ReportLayoutSelection.GET(ReportForNav.ReportID, COMPANYNAME) THEN BEGIN
+          LayoutId := ReportLayoutSelection."Custom Report Layout Code";
+          END;
+        END;
+      END ELSE BEGIN
+        IF CONFIRM('Default custom layout not found. Create one?') THEN;
+      END;
+      IF FORMAT(LayoutId) <> EmptyLayout THEN BEGIN
+        TempBlob.Blob.CREATEOUTSTREAM(OutStream);
+        Bstr.ADDTEXT(Base64Layout);
+        Bstr.WRITE(OutStream);
+        CustomReportLayout.GET(LayoutId);
+        CustomReportLayout.ImportLayoutBlob(TempBlob, 'RDL');
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnParameters@5008(Parameters@1000 : Text);
+    BEGIN
+      ReportForNav.Parameters := REPORT.RUNREQUESTPAGE(ReportForNav.ReportID, Parameters);
+    END;
+
+    EVENT ReportForNav@5000::OnPreview@5009(Parameters@1000 : Text;FileName@1005 : Text);
+    VAR
+      PdfFile@1002 : File;
+      InStream@1003 : InStream;
+      OutStream@1004 : OutStream;
+    BEGIN
+      COMMIT;
+      PdfFile.CREATETEMPFILE;
+      PdfFile.CREATEOUTSTREAM(OutStream);
+      REPORT.SAVEAS(ReportForNav.ReportID, Parameters, REPORTFORMAT::Pdf, OutStream);
+      PdfFile.CREATEINSTREAM(InStream);
+      ReportForNavClient.ShowDesigner;
+      IF ReportForNav.IsValidPdf(PdfFile.NAME) THEN DOWNLOADFROMSTREAM(InStream, '', '', '', FileName);
+      PdfFile.CLOSE;
+    END;
+
+    EVENT ReportForNav@5000::OnPreSection@5012(DataItemId@1000 : Text;SectionId@1001 : Text);
+    BEGIN
+    END;
+
+    EVENT ReportForNav@5000::OnPostSection@50013(DataItemId@1000 : Text;SectionId@1001 : Text);
+    BEGIN
+    END;
+
+    EVENT ReportForNav@5000::OnClientOperation@5008(Args@1000 : DotNet "'mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Array");
+    VAR
+      op@1001 : Text;
+      FileMgmt@1002 : Codeunit 419;
+      Process@1006 : DotNet "'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Diagnostics.Process" RUNONCLIENT;
+      PathObj@1005 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Path" RUNONCLIENT;
+      FileVersionInfo@1003 : DotNet "'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Diagnostics.FileVersionInfo" RUNONCLIENT;
+      DirectoryHelper@1004 : DotNet "'mscorlib'.System.IO.Directory" RUNONCLIENT;
+    BEGIN
+      op := Args.GetValue(0);
+      CASE op OF
+        'TempPath': ReportForNav.Result := PathObj.GetTempPath();
+        'FileExists': ReportForNav.Result := FileMgmt.ClientFileExists(Args.GetValue(1));
+        'DirectoryExists': ReportForNav.Result := FileMgmt.ClientDirectoryExists(Args.GetValue(1));
+        'ProcessLocation': ReportForNav.Result := Process.GetCurrentProcess().MainModule.FileName;
+        'FileVersion': ReportForNav.Result := FileVersionInfo.GetVersionInfo(Args.GetValue(1)).FileVersion;
+        'DeleteFile': FileMgmt.DeleteClientFile(Args.GetValue(1));
+        'DeleteDirectory': IF STRLEN(Args.GetValue(1)) > 20 THEN
+          IF FileMgmt.ClientDirectoryExists(Args.GetValue(1)) THEN
+            DirectoryHelper.Delete(FORMAT(Args.GetValue(1)), TRUE);
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnCheckForNavClientVersion@5007();
+    BEGIN
+      ReportForNavClient := ReportForNavClient.Report();
+      IF ReportForNav.MyFileVersion <> ReportForNavClient.MyFileVersion THEN
+        ERROR('You have version %1 of the Reports ForNAV assembly here:\\%2\\Please close your NAV client and update it to version %3.',
+              ReportForNavClient.MyFileVersion, ReportForNavClient.MyFileName, ReportForNav.MyFileVersion);
+    END;
+
+    EVENT ReportForNav@5000::OnSelectPrinter@5006();
+    BEGIN
+      ReportForNav.PrinterSettings.PageSettings := ReportForNavClient.SelectPrinter(ReportForNav.PrinterSettings.PrinterName,ReportForNav.PrinterSettings.ShowPrinterDialog,ReportForNav.PrinterSettings.PageSettings);
+    END;
+
+    EVENT ReportForNav@5000::OnPrint@5005(InStream@1000 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Stream");
+    VAR
+      ClientFileName@1001 : Text[255];
+    BEGIN
+      DOWNLOADFROMSTREAM(InStream, '', '<TEMP>', '', ClientFileName);
+      ReportForNavClient.Print(ClientFileName);
+    END;
+
+    EVENT ReportForNav@5000::OnDesign@5007(Data@1001 : Text);
+    BEGIN
+      ReportForNavClient.Data := Data;
+      WHILE ReportForNavClient.DesignReport DO BEGIN
+        ReportForNav.HandleRequest(ReportForNavClient.GetRequest());
+        SLEEP(100);
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnView@5008(ClientFileName@1000 : Text;Parameters@1001 : Text;ServerFileName@1002 : Text);
+    VAR
+      ServerFile@1003 : File;
+      ServerInStream@1004 : InStream;
+    BEGIN
+      ServerFile.OPEN(ServerFileName);
+      ServerFile.CREATEINSTREAM(ServerInStream);
+      DOWNLOADFROMSTREAM(ServerInStream,'','','',ClientFileName);
+    END;
+
+    EVENT ReportForNav@5000::OnMessage@5009(Operation@1000 : Text;Parameter@1001 : Text;ParameterNo@1002 : Integer);
+    BEGIN
+      CASE Operation OF
+        'Open'    : ReportForNavDialog.OPEN(Parameter);
+        'Update'  : ReportForNavDialog.UPDATE(ParameterNo,Parameter);
+        'Close'   : ReportForNavDialog.CLOSE();
+        'Message' : MESSAGE(Parameter);
+        'Error'   : ERROR(Parameter);
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnPrintPreview@5011(InStream@1000 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Stream";Preview@1001 : Boolean);
+    VAR
+      ClientFileName@1002 : Text[255];
+    BEGIN
+      CurrReport.LANGUAGE := SYSTEM.GLOBALLANGUAGE;
+      DOWNLOADFROMSTREAM(InStream, '', '<TEMP>', '', ClientFileName);
+      WHILE ReportForNavClient.PrintPreviewDialog(ClientFileName,ReportForNav.PrinterSettings.PrinterName,Preview) DO BEGIN
+        ReportForNav.HandlePrintPreviewRequest(ReportForNavClient.GetPrintPreviewRequest());
+        SLEEP(100);
+      END;
+    END;
+
+    EVENT ReportForNav@5000::OnTotals@5004(DataItemId@1000 : Text;Operation@1001 : Text;GroupTotalFieldNo@1002 : Integer);
+    VAR
+      CurrRecRef@1003 : RecordRef;
+      NextRecRef@1004 : RecordRef;
+      CurrKeyRef@1005 : KeyRef;
+      NextKeyRef@1006 : KeyRef;
+      FieldIndex@1007 : Integer;
+      GroupFieldIndex@1008 : Integer;
+    BEGIN
+      // Do not change (Autogenerated by Reports ForNAV) - Instead change the Create Totals, Total Fields or Group Total Fields properties on the Data item in the ForNAV designer
+      CASE DataItemId OF
+        'Vendor': WITH Vendor DO CASE Operation OF
+        END;  'CurrencyLoop': WITH CurrencyLoop DO CASE Operation OF
+        END;
+      END;
+    END;
+
+    BEGIN
+    {
+      Copyright (c) 2017 ForNAV ApS - All Rights Reserved
+      The intellectual work and technical concepts contained in this file are proprietary to ForNAV.
+      Unauthorized reverse engineering, distribution or copying of this file, parts hereof, or derived work, via any medium is strictly prohibited without written permission from ForNAV ApS.
+      This source code is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    }
+    END.
+  }
+  RDLDATA
+  {
+    <?xml version="1.0" encoding="utf-8"?>
+<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
+  <Description>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</Description>
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="DataSource">
+      <ConnectionProperties>
+        <DataProvider>SQL</DataProvider>
+        <ConnectString />
+      </ConnectionProperties>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>fa30d9d3-0365-40fd-b131-7a8a5948ea83</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <Height>2in</Height>
+        <Style />
+      </Body>
+      <Width>6.5in</Width>
+      <Page>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <rd:ReportUnitType>Invalid</rd:ReportUnitType>
+  <rd:ReportID>2e02860f-8fff-417f-ac80-2941b1548ee6</rd:ReportID>
+</Report>
+    END_OF_RDLDATA
+  }
+}
+
